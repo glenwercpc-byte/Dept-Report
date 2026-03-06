@@ -1,345 +1,524 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCPC 부서별 보고서 관리 시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8fafc; }
+        .animate-fade-in { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .rotate-reset { transition: transform 0.5s ease-in-out; }
+        .rotating { transform: rotate(360deg); }
 
-<title>CCPC 부서별 보고서 관리 시스템</title>
+        .auto-list { counter-reset: item; list-style-type: none; padding-left: 0; }
+        .auto-list li { display: flex; margin-bottom: 6px; line-height: 1.5; font-size: 0.95rem; }
+        .auto-list li::before { 
+            content: counter(item) ". "; 
+            counter-increment: item; 
+            font-weight: bold; 
+            margin-right: 8px; 
+            color: #6366f1;
+            flex-shrink: 0;
+        }
 
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+        @media print {
+            .no-print { display: none !important; }
+            .print-area { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .print-grid { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; gap: 15px !important; width: 100% !important; }
+            .break-inside-avoid { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 1.5rem !important; display: block !important; }
+            @page { size: A4 portrait; margin: 1.2cm; }
+            body { background-color: white !important; font-size: 10pt; }
+        }
 
-<style>
-
-body{
-font-family:'Noto Sans KR',sans-serif;
-background:#f8fafc;
-}
-
-.loading{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-display:none;
-justify-content:center;
-align-items:center;
-background:rgba(255,255,255,0.8);
-z-index:9999;
-}
-
-.auto-list{
-counter-reset:item;
-list-style:none;
-padding-left:0;
-}
-
-.auto-list li{
-display:flex;
-margin-bottom:6px;
-}
-
-.auto-list li::before{
-content:counter(item) ". ";
-counter-increment:item;
-font-weight:bold;
-margin-right:8px;
-color:#6366f1;
-}
-
-</style>
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8); z-index: 9999;
+            display: none; justify-content: center; align-items: center;
+        }
+    </style>
 </head>
-
-<body>
-
-<div id="loading" class="loading">
-<i class="fas fa-spinner fa-spin text-3xl text-indigo-600"></i>
-</div>
-
-<nav class="bg-indigo-600 text-white p-3 flex justify-between">
-
-<h1 class="font-bold">CCPC 부서 보고 시스템</h1>
-
-<div>
-
-<button onclick="resetView()">초기화</button>
-
-<button onclick="openCreateForm()">새 보고서</button>
-
-</div>
-
-</nav>
-
-<main class="max-w-5xl mx-auto p-6">
-
-<div class="grid grid-cols-3 gap-4 mb-6">
-
-<div class="bg-white p-4 rounded shadow">
-<p>전체 보고서</p>
-<h2 id="total-count">0</h2>
-</div>
-
-<div class="bg-white p-4 rounded shadow">
-<p>이번 달</p>
-<h2 id="month-count">0</h2>
-</div>
-
-<div class="bg-white p-4 rounded shadow">
-<p>활성 부서</p>
-<div id="active-depts"></div>
-</div>
-
-</div>
-
-<section id="section-form" style="display:none">
-
-<form id="report-form">
-
-<input type="hidden" id="edit-id">
-
-<select id="dept">
-
-<option>목회실</option>
-<option>총무부</option>
-<option>교우부</option>
-<option>새가족부</option>
-<option>장학부</option>
-<option>예배부</option>
-<option>방송부</option>
-<option>찬양부</option>
-<option>청년부</option>
-
-</select>
-
-<input id="writer" placeholder="작성자">
-
-<input type="date" id="date">
-
-<textarea id="activity" placeholder="활동"></textarea>
-
-<textarea id="plans" placeholder="계획"></textarea>
-
-<textarea id="prayer" placeholder="건의"></textarea>
-
-<button type="submit">저장</button>
-
-</form>
-
-</section>
-
-<section id="section-list">
-
-<input id="search" placeholder="부서 검색">
-
-<button onclick="executeSearch()">조회</button>
-
-<div id="report-detail-container"></div>
-
-</section>
-
-</main>
-
-<div id="toast"></div>
-
-<script>
-
-const GAS_WEB_APP_URL =
-"https://script.google.com/macros/s/AKfycbyRS48HPTCPgDRE3N563YE4SA2OZKNHzHlzEpIYKD2OzrjInuJ0tZn47nf-_db71HYe6Q/exec";
-
-let allReports=[];
-
-window.onload=()=>{
-
-loadReports();
-
-document.getElementById("date").value=
-new Date().toISOString().split("T")[0];
-
-};
-
-function toggleLoading(v){
-
-document.getElementById("loading").style.display=
-v?"flex":"none";
-
-}
-
-async function loadReports(){
-
-toggleLoading(true);
-
-const res=await fetch(`${GAS_WEB_APP_URL}?action=getReports`);
-
-const data=await res.json();
-
-allReports=data||[];
-
-updateDashboard();
-
-toggleLoading(false);
-
-}
-
-function updateDashboard(){
-
-document.getElementById("total-count").innerText=
-allReports.length;
-
-const now=new Date();
-
-const prefix=
-`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
-
-const month=
-allReports.filter(r=>r.date.startsWith(prefix));
-
-document.getElementById("month-count").innerText=
-month.length;
-
-}
-
-function executeSearch(){
-
-const term=document
-.getElementById("search")
-.value
-.toLowerCase();
-
-const filtered=
-allReports.filter(r=>
-r.dept.includes(term)
-);
-
-displaySearchList(filtered);
-
-}
-
-function displaySearchList(list){
-
-const box=document.getElementById("report-detail-container");
-
-box.innerHTML="";
-
-list.forEach(r=>{
-
-const div=document.createElement("div");
-
-div.className="bg-white p-4 rounded shadow mb-3";
-
-div.innerHTML=`
-
-<h3>${r.date} ${r.dept}</h3>
-
-<p>작성자 : ${r.writer}</p>
-
-<button onclick="deleteReport('${r.id}')">삭제</button>
-
-`;
-
-box.appendChild(div);
-
-});
-
-}
-
-async function deleteReport(id){
-
-if(!confirm("삭제하시겠습니까?"))return;
-
-toggleLoading(true);
-
-await fetch(GAS_WEB_APP_URL,{
-
-method:"POST",
-
-mode:"no-cors",
-
-headers:{"Content-Type":"application/json"},
-
-body:JSON.stringify({
-
-action:"delete",
-
-id:id
-
-})
-
-});
-
-setTimeout(()=>{
-
-location.reload();
-
-},2000);
-
-}
-
-function openCreateForm(){
-
-document.getElementById("section-form").style.display="block";
-
-}
-
-document
-.getElementById("report-form")
-.addEventListener("submit",async e=>{
-
-e.preventDefault();
-
-toggleLoading(true);
-
-const data={
-
-id:"ID_"+Date.now(),
-
-dept:document.getElementById("dept").value,
-
-writer:document.getElementById("writer").value,
-
-date:document.getElementById("date").value,
-
-activity:document.getElementById("activity").value,
-
-plans:document.getElementById("plans").value,
-
-prayer:document.getElementById("prayer").value
-
-};
-
-await fetch(GAS_WEB_APP_URL,{
-
-method:"POST",
-
-mode:"no-cors",
-
-headers:{"Content-Type":"application/json"},
-
-body:JSON.stringify({
-
-action:"save",
-
-...data
-
-})
-
-});
-
-setTimeout(()=>{
-
-location.reload();
-
-},2000);
-
-});
-
-function resetView(){
-
-location.reload();
-
-}
-
-</script>
-
+<body class="bg-slate-50 text-slate-800">
+
+    <div id="loading" class="loading-overlay">
+        <div class="flex flex-col items-center">
+            <i class="fas fa-spinner fa-spin text-3xl text-indigo-500 mb-2"></i>
+            <p class="font-bold text-sm text-slate-600">데이터 로딩 중...</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 no-print mt-4 px-4">
+        <div class="max-w-6xl mx-auto bg-indigo-600 text-white shadow-lg rounded-xl p-3 flex justify-between items-center">
+            <h1 onclick="resetView()" class="text-base font-bold flex items-center gap-2 cursor-pointer hover:text-indigo-100 transition">
+                <i class="fas fa-church"></i> CCPC 부서별 보고서
+            </h1>
+            <div class="flex items-center gap-2">
+                <button onclick="resetView()" class="group flex items-center gap-1.5 hover:text-indigo-100 transition text-xs font-medium px-2 py-1.5">
+                    <i id="reset-icon" class="fas fa-redo-alt rotate-reset text-[10px]"></i>
+                    초기화
+                </button>
+                
+                <div class="flex items-center gap-2 ml-2 border-l border-indigo-500 pl-4">
+                    <button onclick="showMonthlySummary()" class="bg-indigo-500/50 border border-indigo-300/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white hover:text-indigo-700 transition">
+                        이번 달 전체 보기
+                    </button>
+                    <button onclick="openCreateForm()" class="bg-white text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-50 transition shadow-sm">
+                        새 보고서 작성
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-4 md:p-6">
+        
+        <!-- Dashboard -->
+        <div id="dashboard" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 no-print">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-8 border-blue-400">
+                <p class="text-[13px] text-slate-500 font-bold uppercase tracking-tight mb-1">전체 보고서</p>
+                <h2 id="total-count" class="text-3xl text-slate-900 leading-tight">0</h2>
+            </div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-8 border-indigo-400">
+                <p class="text-[13px] text-slate-500 font-bold uppercase tracking-tight mb-1">이번 달 작성</p>
+                <h2 id="month-count" class="text-3xl text-slate-900 leading-tight">0</h2>
+            </div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-8 border-orange-400">
+                <p class="text-[13px] text-slate-500 font-bold uppercase tracking-tight mb-2">이번 달 작성 부서</p>
+                <div id="active-depts" class="flex flex-wrap gap-1.5"></div>
+            </div>
+        </div>
+
+        <!-- Section: Report Form -->
+        <section id="section-form" class="hidden animate-fade-in no-print">
+            <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-slate-200">
+                <h2 id="form-title" class="text-lg font-bold mb-5 flex items-center gap-2 text-indigo-700">
+                    <i class="fas fa-edit"></i> 사역 보고서 작성
+                </h2>
+                <form id="report-form" class="space-y-4">
+                    <input type="hidden" id="edit-id" value="">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">부서명</label>
+                            <select id="dept" class="w-full border-slate-200 rounded-lg p-2 border focus:ring-1 focus:ring-indigo-500 outline-none text-sm">
+                                <option value="목회실">목회실</option>
+                                <option value="총무부">총무부</option>
+                                <option value="교우부">교우부</option>
+                                <option value="새가족부">새가족부</option>
+                                <option value="장학부">장학부</option>
+                                <option value="예배부">예배부</option>
+                                <option value="방송부">방송부</option>
+                                <option value="찬양부">찬양부</option>
+                                <option value="장년교육부">장년교육부</option>
+                                <option value="유치유년부">유치유년부</option>
+                                <option value="중고등부">중고등부</option>
+                                <option value="청년부">청년부</option>
+                                <option value="선교부">선교부</option>
+                                <option value="관리부">관리부</option>
+                                <option value="봉사부">봉사부</option>
+                                <option value="재정부">재정부</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">작성자</label>
+                            <input type="text" id="writer" required class="w-full border-slate-200 rounded-lg p-2 border focus:ring-1 focus:ring-indigo-500 outline-none text-sm" placeholder="이름 입력">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">날짜</label>
+                            <input type="date" id="date" required class="w-full border-slate-200 rounded-lg p-2 border focus:ring-1 focus:ring-indigo-500 outline-none text-sm">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="space-y-1.5">
+                            <label class="block text-sm font-bold text-blue-700">이번 달 사역 활동</label>
+                            <textarea id="activity" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-blue-400 outline-none text-sm leading-relaxed" placeholder="1. 활동 내용을 적어주세요."></textarea>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block text-sm font-bold text-emerald-700">다음 달 사역 계획</label>
+                            <textarea id="plans" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-emerald-400 outline-none text-sm leading-relaxed" placeholder="1. 계획을 적어주세요."></textarea>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block text-sm font-bold text-violet-700">기타 및 건의사항</label>
+                            <textarea id="prayer" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-violet-400 outline-none text-sm leading-relaxed" placeholder="건의 및 기도제목"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 border-t pt-4">
+                        <button type="button" onclick="showSection('list')" class="px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 font-medium text-sm">취소</button>
+                        <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold shadow-sm text-sm">보고서 저장</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Section: List -->
+        <section id="section-list" class="animate-fade-in no-print">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-4">
+                <div class="flex gap-2">
+                    <div class="relative flex-grow">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="search" placeholder="부서명 또는 작성자 검색..." class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg focus:border-indigo-400 outline-none text-sm" onkeyup="if(event.key === 'Enter') executeSearch()">
+                    </div>
+                    <button onclick="executeSearch()" class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-indigo-700 transition text-sm">조회</button>
+                </div>
+            </div>
+            
+            <div id="date-selection-area" class="hidden mb-4 flex flex-wrap gap-2"></div>
+            <div id="report-detail-container"></div>
+            
+            <div id="empty-state" class="text-center py-16 bg-white rounded-xl border-2 border-dashed border-slate-100">
+                <i class="fas fa-folder-open text-slate-200 text-4xl mb-3"></i>
+                <p class="text-slate-400 text-sm">조회할 부서를 검색하거나 상단 '새 보고서'를 클릭하세요.</p>
+            </div>
+        </section>
+
+        <!-- Section: Monthly (Print) -->
+        <section id="section-monthly" class="hidden animate-fade-in">
+            <div class="flex justify-between items-center mb-5 no-print">
+                <h2 class="text-lg font-bold text-slate-800">월간 통합 보고서 미리보기</h2>
+                <div class="flex gap-2">
+                    <button onclick="window.print()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-700 transition flex items-center gap-2 text-sm">
+                        <i class="fas fa-print"></i> 인쇄 / PDF 저장
+                    </button>
+                    <button onclick="showSection('list')" class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-bold text-sm">닫기</button>
+                </div>
+            </div>
+            <div id="monthly-report-content" class="print-area space-y-6"></div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-lg opacity-0 transition-opacity pointer-events-none z-[9999] shadow-lg text-xs font-medium"></div>
+
+    <script>
+        /**
+         * 외부에서 실행 시 필요한 설정
+         * GAS에서 [배포] -> [새 배포] -> [웹 앱]으로 배포한 URL을 여기에 입력하세요.
+         */
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRS48HPTCPgDRE3N563YE4SA2OZKNHzHlzEpIYKD2OzrjInuJ0tZn47nf-_db71HYe6Q/exec"; 
+
+        let allReports = [];
+
+        window.onload = () => {
+            loadReports();
+            setupAutoNumbering();
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        };
+
+        function toggleLoading(show) {
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        }
+
+        // 공통 데이터 로딩 함수 (GAS 내부 또는 외부 API 호출)
+        async function loadReports() {
+            toggleLoading(true);
+            const isGas = typeof google !== 'undefined' && google.script && google.script.run;
+            
+            if (isGas) {
+                google.script.run.withSuccessHandler(data => {
+                    allReports = data || [];
+                    updateDashboard();
+                    toggleLoading(false);
+                }).getReports();
+            } else if (GAS_WEB_APP_URL) {
+                // GitHub 등 외부 환경에서 API 호출
+                try {
+                    const response = await fetch(`${GAS_WEB_APP_URL}?action=getReports`);
+                    const data = await response.json();
+                    allReports = data || [];
+                    updateDashboard();
+                } catch (e) {
+                    console.error("API 연동 오류:", e);
+                    showToast("서버 연결 실패. 로컬 데이터를 사용합니다.");
+                    allReports = JSON.parse(localStorage.getItem('church_reports_v2')) || [];
+                    updateDashboard();
+                } finally {
+                    toggleLoading(false);
+                }
+            } else {
+                // 로컬 모드
+                setTimeout(() => {
+                    allReports = JSON.parse(localStorage.getItem('church_reports_v2')) || [];
+                    updateDashboard();
+                    toggleLoading(false);
+                }, 400);
+            }
+        }
+
+        function updateDashboard() {
+            document.getElementById('total-count').innerText = allReports.length;
+            const now = new Date();
+            const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const monthReps = allReports.filter(r => r.date && r.date.startsWith(prefix));
+            document.getElementById('month-count').innerText = monthReps.length;
+            
+            const depts = [...new Set(monthReps.map(r => r.dept))].sort();
+            document.getElementById('active-depts').innerHTML = depts.map(d => 
+                `<button onclick="clickDeptChip('${d}')" class="bg-indigo-50 text-indigo-600 text-[10px] font-black px-2 py-1 rounded border border-indigo-100 hover:bg-indigo-600 hover:text-white transition cursor-pointer">
+                    ${d}
+                </button>`
+            ).join('') || '<span class="text-[11px] text-slate-400 italic font-medium">이번 달 기록 없음</span>';
+        }
+
+        function clickDeptChip(deptName) {
+            showSection('list');
+            document.getElementById('search').value = deptName;
+            executeSearch();
+            showToast(`${deptName} 보고서를 조회합니다.`);
+        }
+
+        function showSection(section) {
+            ['form', 'list', 'monthly'].forEach(s => document.getElementById(`section-${s}`).classList.add('hidden'));
+            document.getElementById(`section-${section}`).classList.remove('hidden');
+        }
+
+        function executeSearch() {
+            const term = document.getElementById('search').value.toLowerCase().trim();
+            if (!term) return;
+            const filtered = allReports.filter(r => r.dept.includes(term) || (r.writer && r.writer.includes(term)));
+            displaySearchList(filtered);
+        }
+
+        function displaySearchList(results) {
+            const dateArea = document.getElementById('date-selection-area');
+            const container = document.getElementById('report-detail-container');
+            const empty = document.getElementById('empty-state');
+            
+            dateArea.innerHTML = '';
+            container.innerHTML = '';
+
+            if (!results.length) {
+                dateArea.classList.add('hidden');
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            dateArea.classList.remove('hidden');
+
+            results.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach((r, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "px-3 py-1.5 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-indigo-400 transition text-xs font-bold text-slate-700";
+                btn.innerText = `${r.date} (${r.dept})`;
+                btn.onclick = () => renderDetail(r);
+                dateArea.appendChild(btn);
+                if (idx === 0) renderDetail(r);
+            });
+        }
+
+        function renderDetail(r) {
+            const container = document.getElementById('report-detail-container');
+            container.innerHTML = `
+                <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden animate-fade-in no-print">
+                    <div class="bg-indigo-100 p-4 border-b border-indigo-200 flex justify-between items-center">
+                        <h2 class="text-sm font-bold text-indigo-900">
+                           <i class="fas fa-file-alt mr-1"></i> ${r.date} ${r.dept} 보고서 <span class="mx-2 text-indigo-300">|</span> <span class="font-bold">작성자: ${r.writer}</span>
+                        </h2>
+                        <div class="flex gap-2">
+                             <button onclick="deleteReport('${r.id}')" class="text-[10px] bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 px-2 py-1 rounded-md font-bold transition">삭제</button>
+                        </div>
+                    </div>
+                    <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="space-y-2">
+                            <h4 class="text-blue-700 font-bold border-b border-blue-100 pb-1 flex items-center gap-1.5 text-xs"><i class="fas fa-check-circle text-[10px]"></i> 활동 내용</h4>
+                            <ul class="auto-list">${formatToList(r.activity)}</ul>
+                        </div>
+                        <div class="space-y-2">
+                            <h4 class="text-emerald-700 font-bold border-b border-emerald-100 pb-1 flex items-center gap-1.5 text-xs"><i class="fas fa-arrow-right text-[10px]"></i> 차후 계획</h4>
+                            <ul class="auto-list">${formatToList(r.plans)}</ul>
+                        </div>
+                        <div class="space-y-2">
+                            <h4 class="text-violet-700 font-bold border-b border-violet-100 pb-1 flex items-center gap-1.5 text-xs"><i class="fas fa-lightbulb text-[10px]"></i> 건의/기타</h4>
+                            <ul class="auto-list">${formatToList(r.prayer)}</ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function deleteReport(id) {
+            if(!confirm("이 보고서를 삭제하시겠습니까?")) return;
+            toggleLoading(true);
+            
+            const isGas = typeof google !== 'undefined' && google.script && google.script.run;
+            if (isGas) {
+                google.script.run.withSuccessHandler(() => {
+                    showToast("삭제되었습니다.");
+                    loadReports();
+                }).deleteReport(id);
+            } else if (GAS_WEB_APP_URL) {
+                try {
+                    await fetch(`${GAS_WEB_APP_URL}`, {
+                        method: 'POST',
+                        mode: 'no-cors', // CORS 제한으로 인해 no-cors 사용 시 응답 확인 불가하나 전송은 가능
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete', id: id })
+                    });
+                    showToast("삭제 요청을 보냈습니다. (잠시 후 새로고침)");
+                    setTimeout(loadReports, 2000);
+                } catch (e) {
+                    showToast("삭제 실패");
+                } finally {
+                    toggleLoading(false);
+                }
+            } else {
+                allReports = allReports.filter(rep => rep.id !== id);
+                localStorage.setItem('church_reports_v2', JSON.stringify(allReports));
+                showToast("로컬에서 삭제되었습니다.");
+                updateDashboard();
+                document.getElementById('report-detail-container').innerHTML = '';
+                executeSearch();
+                toggleLoading(false);
+            }
+        }
+
+        function formatToList(text) {
+            if (!text) return '<li class="text-slate-400 italic text-xs">내용 없음</li>';
+            return text.split('\n').filter(l => l.trim()).map(l => `<li>${l.replace(/^\d+[\.\)]\s*/, '')}</li>`).join('');
+        }
+
+        function showMonthlySummary() {
+            const now = new Date();
+            const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const monthReports = allReports.filter(r => r.date && r.date.startsWith(prefix)).sort((a,b) => a.dept.localeCompare(b.dept));
+            
+            if (!monthReports.length) {
+                showToast("이번 달 데이터가 없습니다.");
+                return;
+            }
+
+            const container = document.getElementById('monthly-report-content');
+            container.innerHTML = `<div class="text-center pb-4 border-b-2 border-indigo-500 mb-6"><h1 class="text-2xl font-black text-slate-900">${now.getFullYear()}년 ${now.getMonth()+1}월 부서 사역 통합 보고</h1></div>`;
+
+            monthReports.forEach(r => {
+                const div = document.createElement('div');
+                div.className = `bg-white p-4 rounded-lg border border-slate-200 break-inside-avoid shadow-sm`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1 mb-3">
+                        <h3 class="text-sm font-bold text-indigo-900">${r.date} ${r.dept} 보고서, 작성: ${r.writer}</h3>
+                    </div>
+                    <div class="print-grid grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-blue-700 font-bold mb-1 text-[11px]">활동 내용</p>
+                            <ul class="auto-list text-[11px]">${formatToList(r.activity)}</ul>
+                        </div>
+                        <div>
+                            <p class="text-emerald-700 font-bold mb-1 text-[11px]">사역 계획</p>
+                            <ul class="auto-list text-[11px]">${formatToList(r.plans)}</ul>
+                        </div>
+                        <div>
+                            <p class="text-violet-700 font-bold mb-1 text-[11px]">건의/기타</p>
+                            <ul class="auto-list text-[11px]">${formatToList(r.prayer)}</ul>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            showSection('monthly');
+        }
+
+        function resetView() {
+            const icon = document.getElementById('reset-icon');
+            icon.classList.add('rotating');
+            setTimeout(() => icon.classList.remove('rotating'), 500);
+
+            document.getElementById('search').value = '';
+            document.getElementById('report-detail-container').innerHTML = '';
+            document.getElementById('date-selection-area').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+            showSection('list');
+            loadReports();
+            showToast("데이터를 동기화했습니다.");
+        }
+
+        function setupAutoNumbering() {
+            document.querySelectorAll('.auto-number-target').forEach(ta => {
+                ta.addEventListener('focus', function() { if(!this.value.trim()) this.value = "1. "; });
+                ta.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        const pos = this.selectionStart;
+                        const line = this.value.substring(0, pos).split('\n').pop();
+                        const match = line.match(/^(\d+)\.\s/);
+                        if (match) {
+                            e.preventDefault();
+                            const next = parseInt(match[1]) + 1;
+                            const insert = `\n${next}. `;
+                            this.value = this.value.substring(0, pos) + insert + this.value.substring(pos);
+                            this.setSelectionRange(pos + insert.length, pos + insert.length);
+                        }
+                    }
+                });
+            });
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 2000);
+        }
+
+        function openCreateForm() {
+            document.getElementById('report-form').reset();
+            document.getElementById('edit-id').value = '';
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            showSection('form');
+        }
+
+        document.getElementById('report-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            toggleLoading(true);
+            const data = {
+                id: "ID_" + Date.now(),
+                dept: document.getElementById('dept').value,
+                writer: document.getElementById('writer').value,
+                date: document.getElementById('date').value,
+                activity: document.getElementById('activity').value,
+                plans: document.getElementById('plans').value,
+                prayer: document.getElementById('prayer').value
+            };
+            
+            const isGas = typeof google !== 'undefined' && google.script && google.script.run;
+            if (isGas) {
+                google.script.run.withSuccessHandler(() => {
+                    showToast('성공적으로 저장되었습니다.');
+                    loadReports();
+                    showSection('list');
+                }).saveReport(data);
+            } else if (GAS_WEB_APP_URL) {
+                try {
+                    // 외부 서버(GAS)에 데이터 전송
+                    await fetch(`${GAS_WEB_APP_URL}`, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'save', ...data })
+                    });
+                    showToast('서버 전송 완료! 잠시 후 데이터가 동기화됩니다.');
+                    setTimeout(() => {
+                        loadReports();
+                        showSection('list');
+                    }, 2000);
+                } catch (e) {
+                    showToast('서버 저장 실패');
+                } finally {
+                    toggleLoading(false);
+                }
+            } else {
+                let list = JSON.parse(localStorage.getItem('church_reports_v2')) || [];
+                list.unshift(data);
+                localStorage.setItem('church_reports_v2', JSON.stringify(list));
+                showToast('로컬에 임시 저장되었습니다.');
+                loadReports();
+                showSection('list');
+            }
+        });
+    </script>
 </body>
 </html>
