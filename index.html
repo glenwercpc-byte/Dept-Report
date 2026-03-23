@@ -56,7 +56,7 @@
     <nav class="sticky top-0 z-50 no-print mt-4 px-4">
         <div class="max-w-6xl mx-auto bg-indigo-600 text-white shadow-lg rounded-xl p-3 flex justify-between items-center">
             <h1 onclick="resetView()" class="text-base font-bold flex items-center gap-2 cursor-pointer hover:text-indigo-100 transition">
-                <i class="fas fa-church"></i> CCPC 부서별 보고서
+                <i class="fas fa-church"></i> CCPC 보고서
             </h1>
             <div class="flex items-center gap-2">
                 <button onclick="resetView()" class="group flex items-center gap-1.5 hover:text-indigo-100 transition text-xs font-medium px-2 py-1.5">
@@ -64,35 +64,39 @@
                     초기화
                 </button>
                 
-                <div class="flex items-center gap-2 ml-2 border-l border-indigo-500 pl-4">
-                    <button onclick="showMonthlySummary()" class="bg-indigo-500/50 border border-indigo-300/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white hover:text-indigo-700 transition">
-                        이번 달 전체 보기
-                    </button>
+                <div class="flex items-center gap-2 ml-2 border-l border-indigo-500 pl-2">
                     <button onclick="openCreateForm()" class="bg-white text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-50 transition shadow-sm">
-                        새 보고서 작성
+                        작성
                     </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto p-4 md:p-6">
+    <main class="max-w-6xl mx-auto p-4">
         
-        <!-- Dashboard: Adjusted Column Ratios (1:1:4) -->
-        <div id="dashboard" class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6 no-print">
-            <!-- Total Reports (1/6 width) -->
-            <div class="md:col-span-1 bg-white p-4 rounded-xl shadow-sm border border-slate-100 border-l-8 border-blue-400">
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tight mb-1">전체 보고서</p>
-                <h2 id="total-count" class="text-2xl font-bold text-slate-900 leading-tight">0</h2>
+        <!-- Dashboard: Responsive Layout -->
+        <!-- Mobile: 2 cols (Numbers first row, Depts second row) -->
+        <!-- Desktop: 6 cols (Numbers 1:1, Depts 4) -->
+        <div id="dashboard" class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6 no-print">
+            <!-- Total Reports (Mobile: 1/2 width, Desktop: 1/6 width) -->
+            <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-100 border-l-4 md:border-l-8 border-blue-400">
+                <p class="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-tight mb-1">전체 보고서</p>
+                <h2 id="total-count" class="text-xl md:text-2xl font-bold text-slate-900 leading-tight">0</h2>
             </div>
-            <!-- Monthly Count (1/6 width) -->
-            <div class="md:col-span-1 bg-white p-4 rounded-xl shadow-sm border border-slate-100 border-l-8 border-indigo-400">
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tight mb-1">이번 달 작성</p>
-                <h2 id="month-count" class="text-2xl font-bold text-slate-900 leading-tight">0</h2>
+            
+            <!-- Monthly Count (Mobile: 1/2 width, Desktop: 1/6 width) -->
+            <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-100 border-l-4 md:border-l-8 border-indigo-400">
+                <p class="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-tight mb-1">이번 달 작성</p>
+                <h2 id="month-count" class="text-xl md:text-2xl font-bold text-slate-900 leading-tight">0</h2>
             </div>
-            <!-- Active Departments List (4/6 width) - Increased Space -->
-            <div class="md:col-span-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100 border-l-8 border-orange-400">
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tight mb-2">이번 달 작성 부서 (목록)</p>
+            
+            <!-- Active Departments List (Mobile: Full width below, Desktop: 4/6 width) -->
+            <div class="col-span-2 md:col-span-4 bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-100 border-l-4 md:border-l-8 border-orange-400">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-tight">이번 달 작성 부서 목록</p>
+                    <button onclick="showMonthlySummary()" class="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded md:hidden">전체보기</button>
+                </div>
                 <div id="active-depts" class="flex flex-wrap gap-1.5"></div>
             </div>
         </div>
@@ -140,15 +144,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="space-y-1.5">
                             <label class="block text-sm font-bold text-blue-700">이번 달 사역 활동</label>
-                            <textarea id="activity" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-blue-400 outline-none text-sm leading-relaxed" placeholder="1. 활동 내용을 적어주세요."></textarea>
+                            <textarea id="activity" rows="6" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-blue-400 outline-none text-sm leading-relaxed" placeholder="1. 활동 내용을 적어주세요."></textarea>
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-sm font-bold text-emerald-700">다음 달 사역 계획</label>
-                            <textarea id="plans" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-emerald-400 outline-none text-sm leading-relaxed" placeholder="1. 계획을 적어주세요."></textarea>
+                            <textarea id="plans" rows="6" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-emerald-400 outline-none text-sm leading-relaxed" placeholder="1. 계획을 적어주세요."></textarea>
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-sm font-bold text-violet-700">기타 및 건의사항</label>
-                            <textarea id="prayer" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-violet-400 outline-none text-sm leading-relaxed" placeholder="건의 및 기도제목"></textarea>
+                            <textarea id="prayer" rows="6" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-violet-400 outline-none text-sm leading-relaxed" placeholder="건의 및 기도제목"></textarea>
                         </div>
                     </div>
 
@@ -168,28 +172,28 @@
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                         <input type="text" id="search" placeholder="부서명 또는 작성자 검색..." class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg focus:border-indigo-400 outline-none text-sm" onkeyup="if(event.key === 'Enter') executeSearch()">
                     </div>
-                    <button onclick="executeSearch()" class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-indigo-700 transition text-sm">조회</button>
+                    <button onclick="executeSearch()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition text-sm">조회</button>
                 </div>
             </div>
             
-            <div id="date-selection-area" class="hidden mb-4 flex flex-wrap gap-2"></div>
+            <div id="date-selection-area" class="hidden mb-4 flex flex-wrap gap-2 overflow-x-auto pb-2"></div>
             <div id="report-detail-container"></div>
             
             <div id="empty-state" class="text-center py-16 bg-white rounded-xl border-2 border-dashed border-slate-100">
                 <i class="fas fa-folder-open text-slate-200 text-4xl mb-3"></i>
-                <p class="text-slate-400 text-sm">조회할 부서를 검색하거나 상단 '새 보고서'를 클릭하세요.</p>
+                <p class="text-slate-400 text-sm px-4">조회할 부서를 검색하거나 상단 '작성' 버튼을 클릭하세요.</p>
             </div>
         </section>
 
         <!-- Section: Monthly (Print) -->
         <section id="section-monthly" class="hidden animate-fade-in">
             <div class="flex justify-between items-center mb-5 no-print">
-                <h2 class="text-lg font-bold text-slate-800">월간 통합 보고서 미리보기</h2>
+                <h2 class="text-lg font-bold text-slate-800">월간 통합 보고서</h2>
                 <div class="flex gap-2">
-                    <button onclick="window.print()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-700 transition flex items-center gap-2 text-sm">
-                        <i class="fas fa-print"></i> 인쇄 / PDF 저장
+                    <button onclick="window.print()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-700 transition flex items-center gap-2 text-xs">
+                        <i class="fas fa-print"></i> 인쇄 / PDF
                     </button>
-                    <button onclick="showSection('list')" class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-bold text-sm">닫기</button>
+                    <button onclick="showSection('list')" class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-bold text-xs">닫기</button>
                 </div>
             </div>
             <div id="monthly-report-content" class="print-area space-y-6"></div>
@@ -197,7 +201,7 @@
 
     </main>
 
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-lg opacity-0 transition-opacity pointer-events-none z-[9999] shadow-lg text-xs font-medium"></div>
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-lg opacity-0 transition-opacity pointer-events-none z-[9999] shadow-lg text-xs font-medium whitespace-nowrap"></div>
 
     <script>
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwgw6NBQ5BKXVGfDEMEp68h7Fa6fHK50fp1pAreR2F1N68dFYL2cVJZ166XeO1vRaeNsw/exec"; 
@@ -267,7 +271,7 @@
             showSection('list');
             document.getElementById('search').value = deptName;
             executeSearch();
-            showToast(`${deptName} 보고서를 조회합니다.`);
+            showToast(`${deptName} 조회 중...`);
         }
 
         function showSection(section) {
@@ -276,6 +280,7 @@
                 if (el) el.classList.add('hidden');
             });
             document.getElementById(`section-${section}`).classList.remove('hidden');
+            window.scrollTo(0, 0);
         }
 
         function executeSearch() {
@@ -304,7 +309,7 @@
 
             results.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach((r, idx) => {
                 const btn = document.createElement('button');
-                btn.className = "px-3 py-1.5 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-indigo-400 transition text-xs font-bold text-slate-700";
+                btn.className = "flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-indigo-400 transition text-xs font-bold text-slate-700 whitespace-nowrap";
                 btn.innerText = `${r.date} (${r.dept})`;
                 btn.onclick = () => renderDetail(r);
                 dateArea.appendChild(btn);
@@ -316,16 +321,16 @@
             const container = document.getElementById('report-detail-container');
             container.innerHTML = `
                 <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden animate-fade-in no-print">
-                    <div class="bg-indigo-100 p-4 border-b border-indigo-200 flex justify-between items-center">
-                        <h2 class="text-sm font-bold text-indigo-900">
-                           <i class="fas fa-file-alt mr-1"></i> ${r.date} ${r.dept} 보고서 <span class="mx-2 text-indigo-300">|</span> <span class="font-bold">작성자: ${r.writer}</span>
+                    <div class="bg-indigo-100 p-3 md:p-4 border-b border-indigo-200 flex flex-col md:flex-row gap-2 justify-between md:items-center">
+                        <h2 class="text-xs md:text-sm font-bold text-indigo-900">
+                           <i class="fas fa-file-alt mr-1"></i> ${r.date} ${r.dept} 보고서 <span class="hidden md:inline mx-2 text-indigo-300">|</span> <span class="font-bold">작성: ${r.writer}</span>
                         </h2>
                         <div class="flex gap-2">
-                             <button onclick="editReport('${r.id}')" class="text-[10px] bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2 py-1 rounded-md font-bold transition">수정</button>
-                             <button onclick="deleteReport('${r.id}')" class="text-[10px] bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 px-2 py-1 rounded-md font-bold transition">삭제</button>
+                             <button onclick="editReport('${r.id}')" class="flex-1 md:flex-none text-[10px] bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-md font-bold transition">수정</button>
+                             <button onclick="deleteReport('${r.id}')" class="flex-1 md:flex-none text-[10px] bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-md font-bold transition">삭제</button>
                         </div>
                     </div>
-                    <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="p-4 md:p-5 grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div class="space-y-2">
                             <h4 class="text-blue-700 font-bold border-b border-blue-100 pb-1 flex items-center gap-1.5 text-xs"><i class="fas fa-check-circle text-[10px]"></i> 활동 내용</h4>
                             <ul class="auto-list">${formatToList(r.activity)}</ul>
@@ -341,6 +346,7 @@
                     </div>
                 </div>
             `;
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function editReport(id) {
@@ -355,10 +361,10 @@
             document.getElementById('plans').value = report.plans;
             document.getElementById('prayer').value = report.prayer;
 
-            document.getElementById('form-title').innerHTML = `<i class="fas fa-edit"></i> 사역 보고서 수정 (${report.dept})`;
+            document.getElementById('form-title').innerHTML = `<i class="fas fa-edit"></i> 보고서 수정 (${report.dept})`;
             
             showSection('form');
-            showToast("수정 모드로 전환되었습니다.");
+            showToast("수정 모드");
         }
 
         async function deleteReport(id) {
@@ -377,17 +383,17 @@
                         method: 'POST',
                         mode: 'no-cors' 
                     });
-                    showToast("삭제 요청이 전송되었습니다.");
-                    setTimeout(resetView, 2000);
+                    showToast("삭제 요청 완료");
+                    setTimeout(resetView, 1500);
                 } catch (e) {
-                    showToast("삭제 요청 중 오류 발생");
+                    showToast("오류 발생");
                 } finally {
                     toggleLoading(false);
                 }
             } else {
                 allReports = allReports.filter(rep => rep.id !== id);
                 localStorage.setItem('church_reports_v2', JSON.stringify(allReports));
-                showToast("로컬에서 삭제되었습니다.");
+                showToast("삭제 완료");
                 resetView();
                 toggleLoading(false);
             }
@@ -404,32 +410,32 @@
             const monthReports = allReports.filter(r => r.date && r.date.startsWith(prefix)).sort((a,b) => a.dept.localeCompare(b.dept));
             
             if (!monthReports.length) {
-                showToast("이번 달 데이터가 없습니다.");
+                showToast("데이터가 없습니다.");
                 return;
             }
 
             const container = document.getElementById('monthly-report-content');
-            container.innerHTML = `<div class="text-center pb-4 border-b-2 border-indigo-500 mb-6"><h1 class="text-2xl font-black text-slate-900">${now.getFullYear()}년 ${now.getMonth()+1}월 부서 사역 통합 보고</h1></div>`;
+            container.innerHTML = `<div class="text-center pb-4 border-b-2 border-indigo-500 mb-6"><h1 class="text-xl md:text-2xl font-black text-slate-900">${now.getFullYear()}년 ${now.getMonth()+1}월 통합 보고</h1></div>`;
 
             monthReports.forEach(r => {
                 const div = document.createElement('div');
                 div.className = `bg-white p-4 rounded-lg border border-slate-200 break-inside-avoid shadow-sm`;
                 div.innerHTML = `
                     <div class="flex justify-between items-center border-b border-slate-100 pb-1 mb-3">
-                        <h3 class="text-sm font-bold text-indigo-900">${r.date} ${r.dept} 보고서, 작성: ${r.writer}</h3>
+                        <h3 class="text-[11px] md:text-sm font-bold text-indigo-900">${r.date} ${r.dept} (${r.writer})</h3>
                     </div>
                     <div class="print-grid grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <p class="text-blue-700 font-bold mb-1 text-[11px]">활동 내용</p>
-                            <ul class="auto-list text-[11px]">${formatToList(r.activity)}</ul>
+                            <p class="text-blue-700 font-bold mb-1 text-[10px]">활동</p>
+                            <ul class="auto-list text-[10px]">${formatToList(r.activity)}</ul>
                         </div>
                         <div>
-                            <p class="text-emerald-700 font-bold mb-1 text-[11px]">사역 계획</p>
-                            <ul class="auto-list text-[11px]">${formatToList(r.plans)}</ul>
+                            <p class="text-emerald-700 font-bold mb-1 text-[10px]">계획</p>
+                            <ul class="auto-list text-[10px]">${formatToList(r.plans)}</ul>
                         </div>
                         <div>
-                            <p class="text-violet-700 font-bold mb-1 text-[11px]">건의/기타</p>
-                            <ul class="auto-list text-[11px]">${formatToList(r.prayer)}</ul>
+                            <p class="text-violet-700 font-bold mb-1 text-[10px]">건의</p>
+                            <ul class="auto-list text-[10px]">${formatToList(r.prayer)}</ul>
                         </div>
                     </div>
                 `;
@@ -478,7 +484,7 @@
             const t = document.getElementById('toast');
             t.innerText = msg;
             t.classList.replace('opacity-0', 'opacity-100');
-            setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 2500);
+            setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 2000);
         }
 
         function openCreateForm() {
@@ -516,7 +522,7 @@
             try {
                 if (isGas) {
                     google.script.run.withSuccessHandler(() => {
-                        showToast('성공적으로 저장되었습니다.');
+                        showToast('저장 성공');
                         resetView();
                     }).saveReport(data);
                 } else if (GAS_WEB_APP_URL) {
@@ -525,8 +531,8 @@
                         mode: 'no-cors',
                         body: JSON.stringify({ action: 'save', ...data })
                     });
-                    showToast('저장 요청이 전송되었습니다.');
-                    setTimeout(resetView, 2500);
+                    showToast('요청 전송 완료');
+                    setTimeout(resetView, 1500);
                 } else {
                     let list = JSON.parse(localStorage.getItem('church_reports_v2')) || [];
                     if (editId) {
@@ -534,12 +540,11 @@
                     }
                     list.unshift(data);
                     localStorage.setItem('church_reports_v2', JSON.stringify(list));
-                    showToast(editId ? '성공적으로 수정되었습니다.' : '로컬에 저장되었습니다.');
+                    showToast('로컬 저장 완료');
                     resetView();
                 }
             } catch (err) {
-                console.error("Save error:", err);
-                showToast('저장 중 오류 발생');
+                showToast('저장 오류');
             } finally {
                 toggleLoading(false);
             }
