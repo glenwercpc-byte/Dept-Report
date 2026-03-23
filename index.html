@@ -36,19 +36,50 @@
             body { background-color: white !important; font-size: 10pt; }
         }
 
-        .loading-overlay {
+        .loading-overlay, .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8); z-index: 9999;
+            background: rgba(0,0,0,0.5); z-index: 9999;
             display: none; justify-content: center; align-items: center;
         }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
 
+    <!-- Loading Overlay -->
     <div id="loading" class="loading-overlay">
-        <div class="flex flex-col items-center">
+        <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center">
             <i class="fas fa-spinner fa-spin text-3xl text-indigo-500 mb-2"></i>
             <p class="font-bold text-sm text-slate-600">데이터 처리 중...</p>
+        </div>
+    </div>
+
+    <!-- Month Picker Modal -->
+    <div id="month-picker-modal" class="modal-overlay no-print">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 animate-fade-in">
+            <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-indigo-700">
+                <i class="fas fa-calendar-alt"></i> 조회 월 선택
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">년도</label>
+                    <select id="select-year" class="w-full border-slate-200 rounded-lg p-2 border outline-none text-sm"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">월</label>
+                    <select id="select-month" class="w-full border-slate-200 rounded-lg p-2 border outline-none text-sm">
+                        <option value="01">1월</option><option value="02">2월</option>
+                        <option value="03">3월</option><option value="04">4월</option>
+                        <option value="05">5월</option><option value="06">6월</option>
+                        <option value="07">7월</option><option value="08">8월</option>
+                        <option value="09">9월</option><option value="10">10월</option>
+                        <option value="11">11월</option><option value="12">12월</option>
+                    </select>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="closeModal()" class="flex-1 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-sm font-medium">취소</button>
+                    <button onclick="generateMonthlySummary()" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-bold shadow-sm">조회하기</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -66,7 +97,7 @@
                 
                 <div class="flex items-center gap-2 ml-2 border-l border-indigo-500 pl-2">
                     <button onclick="openCreateForm()" class="bg-white text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-50 transition shadow-sm">
-                        작성
+                        새 보고서 작성
                     </button>
                 </div>
             </div>
@@ -75,27 +106,24 @@
 
     <main class="max-w-6xl mx-auto p-4">
         
-        <!-- Dashboard: Responsive Layout -->
-        <!-- Mobile: 2 cols (Numbers first row, Depts second row) -->
-        <!-- Desktop: 6 cols (Numbers 1:1, Depts 4) -->
+        <!-- Dashboard -->
         <div id="dashboard" class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6 no-print">
-            <!-- Total Reports (Mobile: 1/2 width, Desktop: 1/6 width) -->
             <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-100 border-l-4 md:border-l-8 border-blue-400">
                 <p class="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-tight mb-1">전체 보고서</p>
                 <h2 id="total-count" class="text-xl md:text-2xl font-bold text-slate-900 leading-tight">0</h2>
             </div>
             
-            <!-- Monthly Count (Mobile: 1/2 width, Desktop: 1/6 width) -->
             <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-100 border-l-4 md:border-l-8 border-indigo-400">
                 <p class="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-tight mb-1">이번 달 작성</p>
                 <h2 id="month-count" class="text-xl md:text-2xl font-bold text-slate-900 leading-tight">0</h2>
             </div>
             
-            <!-- Active Departments List (Mobile: Full width below, Desktop: 4/6 width) -->
             <div class="col-span-2 md:col-span-4 bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-100 border-l-4 md:border-l-8 border-orange-400">
                 <div class="flex justify-between items-center mb-2">
                     <p class="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-tight">이번 달 작성 부서 목록</p>
-                    <button onclick="showMonthlySummary()" class="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded md:hidden">전체보기</button>
+                    <button onclick="openMonthPicker()" class="text-[9px] md:text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded hover:bg-indigo-600 hover:text-white transition shadow-sm border border-indigo-100">
+                        <i class="fas fa-list-ul mr-1"></i>월간 전체보기
+                    </button>
                 </div>
                 <div id="active-depts" class="flex flex-wrap gap-1.5"></div>
             </div>
@@ -181,14 +209,14 @@
             
             <div id="empty-state" class="text-center py-16 bg-white rounded-xl border-2 border-dashed border-slate-100">
                 <i class="fas fa-folder-open text-slate-200 text-4xl mb-3"></i>
-                <p class="text-slate-400 text-sm px-4">조회할 부서를 검색하거나 상단 '작성' 버튼을 클릭하세요.</p>
+                <p class="text-slate-400 text-sm px-4">조회할 부서를 검색하거나 상단 '새 보고서 작성' 버튼을 클릭하세요.</p>
             </div>
         </section>
 
         <!-- Section: Monthly (Print) -->
         <section id="section-monthly" class="hidden animate-fade-in">
             <div class="flex justify-between items-center mb-5 no-print">
-                <h2 class="text-lg font-bold text-slate-800">월간 통합 보고서</h2>
+                <h2 class="text-lg font-bold text-slate-800">통합 보고서</h2>
                 <div class="flex gap-2">
                     <button onclick="window.print()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-700 transition flex items-center gap-2 text-xs">
                         <i class="fas fa-print"></i> 인쇄 / PDF
@@ -211,6 +239,7 @@
         window.onload = () => {
             loadReports();
             setupAutoNumbering();
+            initYearPicker();
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
         };
 
@@ -239,7 +268,6 @@
                     localStorage.setItem('church_reports_v2', JSON.stringify(allReports));
                     updateDashboard();
                 } catch (e) {
-                    console.warn("API 연동 시도 실패:", e);
                     allReports = JSON.parse(localStorage.getItem('church_reports_v2')) || [];
                     updateDashboard();
                 } finally {
@@ -265,6 +293,72 @@
                     ${d}
                 </button>`
             ).join('') || '<span class="text-[11px] text-slate-400 italic font-medium">이번 달 기록 없음</span>';
+        }
+
+        function initYearPicker() {
+            const selectYear = document.getElementById('select-year');
+            const currentYear = new Date().getFullYear();
+            const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+            
+            for(let i = currentYear; i >= 2023; i--) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = `${i}년`;
+                selectYear.appendChild(opt);
+            }
+            document.getElementById('select-month').value = currentMonth;
+        }
+
+        function openMonthPicker() {
+            document.getElementById('month-picker-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('month-picker-modal').style.display = 'none';
+        }
+
+        function generateMonthlySummary() {
+            const year = document.getElementById('select-year').value;
+            const month = document.getElementById('select-month').value;
+            const prefix = `${year}-${month}`;
+            
+            const filtered = allReports.filter(r => r.date && r.date.startsWith(prefix)).sort((a,b) => a.dept.localeCompare(b.dept));
+            
+            if (!filtered.length) {
+                showToast(`${year}년 ${month}월 데이터가 없습니다.`);
+                return;
+            }
+
+            const container = document.getElementById('monthly-report-content');
+            container.innerHTML = `<div class="text-center pb-4 border-b-2 border-indigo-500 mb-6"><h1 class="text-xl md:text-2xl font-black text-slate-900">${year}년 ${parseInt(month)}월 통합 보고</h1></div>`;
+
+            filtered.forEach(r => {
+                const div = document.createElement('div');
+                div.className = `bg-white p-4 rounded-lg border border-slate-200 break-inside-avoid shadow-sm`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1 mb-3">
+                        <h3 class="text-[11px] md:text-sm font-bold text-indigo-900">${r.date} ${r.dept} (${r.writer})</h3>
+                    </div>
+                    <div class="print-grid grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-blue-700 font-bold mb-1 text-[10px]">활동</p>
+                            <ul class="auto-list text-[10px]">${formatToList(r.activity)}</ul>
+                        </div>
+                        <div>
+                            <p class="text-emerald-700 font-bold mb-1 text-[10px]">계획</p>
+                            <ul class="auto-list text-[10px]">${formatToList(r.plans)}</ul>
+                        </div>
+                        <div>
+                            <p class="text-violet-700 font-bold mb-1 text-[10px]">건의</p>
+                            <ul class="auto-list text-[10px]">${formatToList(r.prayer)}</ul>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            closeModal();
+            showSection('monthly');
         }
 
         function clickDeptChip(deptName) {
@@ -402,46 +496,6 @@
         function formatToList(text) {
             if (!text) return '<li class="text-slate-400 italic text-xs">내용 없음</li>';
             return text.split('\n').filter(l => l.trim()).map(l => `<li>${l.replace(/^\d+[\.\)]\s*/, '')}</li>`).join('');
-        }
-
-        function showMonthlySummary() {
-            const now = new Date();
-            const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            const monthReports = allReports.filter(r => r.date && r.date.startsWith(prefix)).sort((a,b) => a.dept.localeCompare(b.dept));
-            
-            if (!monthReports.length) {
-                showToast("데이터가 없습니다.");
-                return;
-            }
-
-            const container = document.getElementById('monthly-report-content');
-            container.innerHTML = `<div class="text-center pb-4 border-b-2 border-indigo-500 mb-6"><h1 class="text-xl md:text-2xl font-black text-slate-900">${now.getFullYear()}년 ${now.getMonth()+1}월 통합 보고</h1></div>`;
-
-            monthReports.forEach(r => {
-                const div = document.createElement('div');
-                div.className = `bg-white p-4 rounded-lg border border-slate-200 break-inside-avoid shadow-sm`;
-                div.innerHTML = `
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-1 mb-3">
-                        <h3 class="text-[11px] md:text-sm font-bold text-indigo-900">${r.date} ${r.dept} (${r.writer})</h3>
-                    </div>
-                    <div class="print-grid grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <p class="text-blue-700 font-bold mb-1 text-[10px]">활동</p>
-                            <ul class="auto-list text-[10px]">${formatToList(r.activity)}</ul>
-                        </div>
-                        <div>
-                            <p class="text-emerald-700 font-bold mb-1 text-[10px]">계획</p>
-                            <ul class="auto-list text-[10px]">${formatToList(r.plans)}</ul>
-                        </div>
-                        <div>
-                            <p class="text-violet-700 font-bold mb-1 text-[10px]">건의</p>
-                            <ul class="auto-list text-[10px]">${formatToList(r.prayer)}</ul>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-            showSection('monthly');
         }
 
         function resetView() {
