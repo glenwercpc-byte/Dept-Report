@@ -71,12 +71,25 @@
             @page { size: A4 portrait; margin: 1.5cm 1cm; }
             body { background-color: white !important; font-size: 9pt; color: #000 !important; }
             .auto-list li { margin-bottom: 4px !important; }
+
+            /* 인쇄 시 타이틀 강제 표시 */
+            .print-title { display: block !important; text-align: center; margin-bottom: 20px; font-size: 18pt; font-weight: bold; }
         }
+
+        /* 화면에서는 숨김 (미리보기 섹션 내부에서만 표시되도록) */
+        .print-title { display: none; }
 
         .loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.8); z-index: 9999;
             display: none; justify-content: center; align-items: center;
+        }
+
+        /* 모달 스타일 */
+        .modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
         }
     </style>
 </head>
@@ -89,6 +102,36 @@
         </div>
     </div>
 
+    <!-- 월 선택 모달 -->
+    <div id="modal-month-select" class="modal-backdrop no-print">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-fade-in mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-900">조회 월 선택</h3>
+                <button onclick="closeMonthModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="text-xs text-slate-500 mb-6">통합 보고서를 생성할 연도와 월을 선택하세요.</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">연도</label>
+                    <select id="modal-year" class="w-full border-slate-200 rounded-lg p-2.5 border focus:ring-1 focus:ring-indigo-500 outline-none text-sm font-medium"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">월</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <!-- 월 버튼들은 JS에서 생성 -->
+                        <div id="modal-month-buttons" class="contents"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex gap-2">
+                <button onclick="closeMonthModal()" class="flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition">취소</button>
+                <button onclick="confirmMonthSelection()" class="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">확인</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 상단 네비게이션 -->
     <nav class="sticky top-0 z-50 no-print mt-4 px-4">
         <div class="max-w-6xl mx-auto bg-indigo-600 text-white shadow-lg rounded-xl p-3 flex justify-between items-center">
@@ -98,14 +141,14 @@
             <div class="flex items-center gap-2">
                 <button onclick="resetView()" class="group flex items-center gap-1.5 hover:text-indigo-100 transition text-xs font-medium px-2 py-1.5">
                     <i id="reset-icon" class="fas fa-sync-alt rotate-reset text-[10px]"></i>
-                    새로고침
+                    초기화
                 </button>
                 <div class="flex items-center gap-2 ml-2 border-l border-indigo-500 pl-4">
-                    <button onclick="showMonthlySummary()" class="bg-indigo-500/50 border border-indigo-300/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white hover:text-indigo-700 transition">
-                        이번 달 전체 보기
+                    <button onclick="openMonthModal()" class="bg-indigo-500/50 border border-indigo-300/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white hover:text-indigo-700 transition">
+                        월별 전체 보기
                     </button>
                     <button onclick="openCreateForm()" class="bg-white text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-50 transition shadow-sm">
-                        새 보고서 작성
+                        새보고서 작성
                     </button>
                 </div>
             </div>
@@ -209,7 +252,7 @@
             
             <div id="empty-state" class="text-center py-16 bg-white rounded-xl border-2 border-dashed border-slate-100">
                 <i class="fas fa-folder-open text-slate-200 text-4xl mb-3"></i>
-                <p class="text-slate-400 text-sm">조회할 부서를 검색하거나 상단 '새 보고서'를 클릭하세요.</p>
+                <p class="text-slate-400 text-sm">조회할 부서를 검색하거나 상단 '새보고서 작성'을 클릭하세요.</p>
             </div>
         </section>
 
@@ -237,10 +280,13 @@
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzy-Y4-8ABMMqCY7KziV7lw0FV_ol_cRpSUrb9wwqYgcS4Ct5qSfzpFJe7g4yjcxHLKxw/exec";
 
         let allReports = [];
+        let selectedYear = new Date().getFullYear();
+        let selectedMonth = new Date().getMonth() + 1;
 
         window.onload = () => {
             loadReports();
             setupAutoNumbering();
+            initModalData();
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
         };
 
@@ -287,6 +333,54 @@
                     ${d}
                 </button>`
             ).join('') || '<span class="text-[11px] text-slate-400 italic">기록 없음</span>';
+        }
+
+        function initModalData() {
+            const yearSelect = document.getElementById('modal-year');
+            const currentYear = new Date().getFullYear();
+            for (let i = 0; i < 5; i++) {
+                const opt = document.createElement('option');
+                opt.value = currentYear - i;
+                opt.innerText = `${currentYear - i}년`;
+                yearSelect.appendChild(opt);
+            }
+
+            const monthBtnContainer = document.getElementById('modal-month-buttons');
+            for (let i = 1; i <= 12; i++) {
+                const btn = document.createElement('button');
+                btn.className = "month-btn py-2 border rounded-lg text-sm font-medium transition hover:border-indigo-500 hover:bg-indigo-50";
+                btn.innerText = `${i}월`;
+                btn.id = `m-btn-${i}`;
+                btn.onclick = () => selectMonthInModal(i);
+                monthBtnContainer.appendChild(btn);
+            }
+            selectMonthInModal(new Date().getMonth() + 1);
+        }
+
+        function openMonthModal() {
+            document.getElementById('modal-month-select').style.display = 'flex';
+        }
+
+        function closeMonthModal() {
+            document.getElementById('modal-month-select').style.display = 'none';
+        }
+
+        function selectMonthInModal(m) {
+            selectedMonth = m;
+            document.querySelectorAll('.month-btn').forEach(b => {
+                b.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600');
+                b.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
+            });
+            const selected = document.getElementById(`m-btn-${m}`);
+            selected.classList.replace('bg-white', 'bg-indigo-600');
+            selected.classList.replace('text-slate-600', 'text-white');
+            selected.classList.replace('border-slate-200', 'border-indigo-600');
+        }
+
+        function confirmMonthSelection() {
+            selectedYear = document.getElementById('modal-year').value;
+            closeMonthModal();
+            showMonthlySummary(selectedYear, selectedMonth);
         }
 
         function clickDeptChip(deptName) {
@@ -405,22 +499,23 @@
             return text.split('\n').filter(l => l.trim()).map(l => `<li>${l.replace(/^\d+[\.\)]\s*/, '')}</li>`).join('');
         }
 
-        function showMonthlySummary() {
-            const now = new Date();
-            const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        function showMonthlySummary(year, month) {
+            const reportTitle = `${year}년 ${month}월 부서 사역 통합 보고`;
+            const prefix = `${year}-${String(month).padStart(2, '0')}`;
             const monthReports = allReports.filter(r => String(r.date).startsWith(prefix)).sort((a,b) => a.dept.localeCompare(b.dept));
             
             if (!monthReports.length) {
-                showToast("이번 달 데이터가 없습니다.");
+                showToast(`${year}년 ${month}월 데이터가 없습니다.`);
                 return;
             }
 
             const container = document.getElementById('monthly-report-content');
             
-            // 인쇄용 표 구조 시작 (Portrait 세로형에 맞춰 비율 조정)
             let html = `
+                <div class="print-title">${reportTitle}</div>
+
                 <div class="text-center pb-4 mb-6 no-print">
-                    <h1 class="text-xl font-bold text-slate-900">${now.getFullYear()}년 ${now.getMonth()+1}월 부서 사역 통합 보고</h1>
+                    <h1 class="text-xl font-bold text-slate-900">${reportTitle}</h1>
                 </div>
                 
                 <table class="print-table">
@@ -435,12 +530,10 @@
                     <tbody>
             `;
 
-            // 데이터 행 추가
             monthReports.forEach(r => {
                 html += `
                     <tr class="print-row">
                         <td class="print-cell text-center" style="vertical-align: middle !important; background-color: #fafafa !important;">
-                            <!-- 볼드 없이 일반 굵기 적용 -->
                             <div class="text-base text-slate-800 font-normal">${r.dept}</div>
                             <div class="text-[10px] text-slate-500 mt-0.5 font-normal">(${r.writer})</div>
                         </td>
@@ -476,7 +569,7 @@
             document.getElementById('empty-state').classList.remove('hidden');
             showSection('list');
             loadReports();
-            showToast("데이터를 동기화했습니다.");
+            showToast("데이터를 초기화했습니다.");
         }
 
         function setupAutoNumbering() {
