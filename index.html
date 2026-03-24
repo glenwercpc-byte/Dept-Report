@@ -31,7 +31,7 @@
             display: table;
             width: 100%;
             border-collapse: collapse;
-            border: 2px solid #333; /* 화면용 보더 */
+            border: 2px solid #333; 
             table-layout: fixed;
             background-color: #fff;
         }
@@ -40,19 +40,19 @@
         }
         .print-cell {
             display: table-cell;
-            border: 1px solid #333; /* 화면용 보더 */
-            padding: 12px;
+            border: 1px solid #333; 
+            padding: 10px;
             vertical-align: top;
-            min-height: 100px;
+            min-height: 80px;
             word-break: break-all;
         }
         .print-header-cell {
             background-color: #f1f5f9;
             font-weight: bold;
             text-align: center;
-            font-size: 11pt;
+            font-size: 10pt;
             border-bottom: 2px solid #333;
-            padding: 12px 10px;
+            padding: 10px 5px;
         }
 
         /* 인쇄 전용 스타일 */
@@ -67,9 +67,10 @@
             
             .print-row { page-break-inside: avoid !important; }
             
-            @page { size: A4 landscape; margin: 1cm; }
-            body { background-color: white !important; font-size: 9.5pt; color: #000 !important; }
-            .auto-list li { margin-bottom: 6px !important; }
+            /* Portrait (세로) 설정 */
+            @page { size: A4 portrait; margin: 1.5cm 1cm; }
+            body { background-color: white !important; font-size: 9pt; color: #000 !important; }
+            .auto-list li { margin-bottom: 4px !important; }
         }
 
         .loading-overlay {
@@ -416,19 +417,19 @@
 
             const container = document.getElementById('monthly-report-content');
             
-            // 인쇄용 표 구조 시작
+            // 인쇄용 표 구조 시작 (Portrait 세로형에 맞춰 비율 조정)
             let html = `
                 <div class="text-center pb-4 mb-6 no-print">
-                    <h1 class="text-2xl font-black text-slate-900">${now.getFullYear()}년 ${now.getMonth()+1}월 부서 사역 통합 보고</h1>
+                    <h1 class="text-xl font-bold text-slate-900">${now.getFullYear()}년 ${now.getMonth()+1}월 부서 사역 통합 보고</h1>
                 </div>
                 
                 <table class="print-table">
                     <thead>
                         <tr class="print-row">
-                            <th class="print-cell print-header-cell" style="width: 15%;">부서 (작성자)</th>
-                            <th class="print-cell print-header-cell" style="width: 30%;">이번 달 활동 내역</th>
-                            <th class="print-cell print-header-cell" style="width: 30%;">차후 사역 계획</th>
-                            <th class="print-cell print-header-cell" style="width: 25%;">건의 / 기타</th>
+                            <th class="print-cell print-header-cell" style="width: 18%;">부서 (작성자)</th>
+                            <th class="print-cell print-header-cell" style="width: 28%;">이번 달 활동 내역</th>
+                            <th class="print-cell print-header-cell" style="width: 28%;">차후 사역 계획</th>
+                            <th class="print-cell print-header-cell" style="width: 26%;">건의 / 기타</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -439,8 +440,9 @@
                 html += `
                     <tr class="print-row">
                         <td class="print-cell text-center" style="vertical-align: middle !important; background-color: #fafafa !important;">
-                            <div class="font-bold text-lg text-indigo-900">${r.dept}</div>
-                            <div class="text-xs text-slate-600 mt-1 font-medium">(${r.writer})</div>
+                            <!-- 볼드 없이 일반 굵기 적용 -->
+                            <div class="text-base text-slate-800 font-normal">${r.dept}</div>
+                            <div class="text-[10px] text-slate-500 mt-0.5 font-normal">(${r.writer})</div>
                         </td>
                         <td class="print-cell">
                             <ul class="auto-list">${formatToList(r.activity)}</ul>
