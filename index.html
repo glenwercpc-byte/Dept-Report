@@ -16,12 +16,12 @@
         .rotating { transform: rotate(360deg); }
 
         .auto-list { counter-reset: item; list-style-type: none; padding-left: 0; }
-        .auto-list li { display: flex; margin-bottom: 4px; line-height: 1.4; font-size: 0.9rem; }
+        .auto-list li { display: flex; margin-bottom: 2px; line-height: 1.3; font-size: 0.85rem; }
         .auto-list li::before { 
             content: counter(item) ". "; 
             counter-increment: item; 
             font-weight: bold; 
-            margin-right: 6px; 
+            margin-right: 4px; 
             color: #475569;
             flex-shrink: 0;
         }
@@ -31,38 +31,38 @@
             display: table;
             width: 100%;
             border-collapse: collapse;
-            border: 2px solid #333; 
+            border: 1.5px solid #333; 
             table-layout: fixed;
             background-color: #fff;
         }
         .print-row { display: table-row; }
         .print-cell {
             display: table-cell;
-            border: 1px solid #333; 
-            padding: 10px;
+            border: 0.5px solid #444; 
+            padding: 6px 8px;
             vertical-align: top;
-            min-height: 80px;
+            min-height: 60px;
             word-break: break-all;
         }
         .print-header-cell {
             background-color: #f1f5f9;
             font-weight: bold;
             text-align: center;
-            font-size: 10pt;
-            border-bottom: 2px solid #333;
-            padding: 10px 5px;
+            font-size: 9pt;
+            border-bottom: 1.5px solid #333;
+            padding: 8px 4px;
         }
 
-        /* 인쇄 전용 스타일 */
+        /* 인쇄 전용 스타일: 폰트 크기 2/3 축소 적용 */
         @media print {
             @page { 
                 size: A4 portrait; 
-                margin: 0; 
+                margin: 1cm; 
             }
             
             body { 
                 background-color: white !important; 
-                font-size: 9pt; 
+                font-size: 8pt; 
                 color: #000 !important;
                 margin: 0;
                 padding: 0;
@@ -74,18 +74,21 @@
                 display: block !important; 
                 width: 100% !important; 
                 margin: 0 !important; 
-                padding: 1.5cm 1cm !important; 
+                padding: 0 !important; 
                 box-sizing: border-box;
             }
             
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             
             .print-table { border-color: #000 !important; }
-            .print-cell { border-color: #000 !important; }
-            .print-header-cell { border-bottom-color: #000 !important; }
+            .print-cell { border-color: #000 !important; font-size: 7.5pt !important; line-height: 1.2; }
+            .print-header-cell { border-bottom-color: #000 !important; font-size: 8.5pt !important; }
             .print-row { page-break-inside: avoid !important; }
 
-            .print-title { display: block !important; text-align: center; margin-bottom: 30px; font-size: 20pt; font-weight: bold; color: #000; }
+            .print-title { display: block !important; text-align: center; margin-bottom: 20px; font-size: 16pt; font-weight: bold; color: #000; }
+            
+            .auto-list li { font-size: 7.5pt !important; margin-bottom: 1px; }
+            .auto-list li::before { color: #000; }
         }
 
         .print-title { display: none; }
@@ -493,9 +496,15 @@
             }
         }
 
+        // 내용이 비어있거나 번호만 있는 경우 필터링
         function formatToList(text) {
-            if (!text) return '<li class="text-slate-400 italic text-xs">내용 없음</li>';
-            return text.split('\n').filter(l => l.trim()).map(l => `<li>${l.replace(/^\d+[\.\)]\s*/, '')}</li>`).join('');
+            if (!text || text.trim() === "" || text.trim() === "1.") return '';
+            const items = text.split('\n').filter(l => {
+                const clean = l.replace(/^\d+[\.\)]\s*/, '').trim();
+                return clean.length > 0;
+            });
+            if (items.length === 0) return '';
+            return items.map(l => `<li>${l.replace(/^\d+[\.\)]\s*/, '')}</li>`).join('');
         }
 
         function showMonthlySummary(year, month) {
@@ -517,10 +526,10 @@
                 <table class="print-table">
                     <thead>
                         <tr class="print-row">
-                            <th class="print-cell print-header-cell" style="width: 18%;">부서 (작성자)</th>
-                            <th class="print-cell print-header-cell" style="width: 28%;">이번 달 활동 내역</th>
-                            <th class="print-cell print-header-cell" style="width: 28%;">차후 사역 계획</th>
-                            <th class="print-cell print-header-cell" style="width: 26%;">건의 / 기타</th>
+                            <th class="print-cell print-header-cell" style="width: 16%;">부서 (작성자)</th>
+                            <th class="print-cell print-header-cell" style="width: 30%;">이번 달 활동 내역</th>
+                            <th class="print-cell print-header-cell" style="width: 30%;">차후 사역 계획</th>
+                            <th class="print-cell print-header-cell" style="width: 24%;">건의 / 기타</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -530,8 +539,8 @@
                 html += `
                     <tr class="print-row">
                         <td class="print-cell text-center" style="vertical-align: middle !important; background-color: #fafafa !important;">
-                            <div class="text-base text-slate-800 font-normal">${r.dept}</div>
-                            <div class="text-[10px] text-slate-500 mt-0.5 font-normal">(${r.writer})</div>
+                            <div class="text-[9pt] text-slate-800 font-bold">${r.dept}</div>
+                            <div class="text-[7pt] text-slate-500 mt-0.5">(${r.writer})</div>
                         </td>
                         <td class="print-cell"><ul class="auto-list">${formatToList(r.activity)}</ul></td>
                         <td class="print-cell"><ul class="auto-list">${formatToList(r.plans)}</ul></td>
