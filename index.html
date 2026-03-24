@@ -26,7 +26,7 @@
             flex-shrink: 0;
         }
 
-        /* 공통 표 스타일 (화면 및 인쇄 공용) */
+        /* 공통 표 스타일 */
         .print-table {
             display: table;
             width: 100%;
@@ -35,9 +35,7 @@
             table-layout: fixed;
             background-color: #fff;
         }
-        .print-row {
-            display: table-row;
-        }
+        .print-row { display: table-row; }
         .print-cell {
             display: table-cell;
             border: 1px solid #333; 
@@ -55,28 +53,43 @@
             padding: 10px 5px;
         }
 
-        /* 인쇄 전용 스타일 */
+        /* 인쇄 전용 스타일 - 헤더/푸터 제거 핵심 */
         @media print {
+            /* 브라우저 기본 헤더/푸터(URL, 날짜 등) 제거 */
+            @page { 
+                size: A4 portrait; 
+                margin: 0; /* 마진을 0으로 설정하면 브라우저 헤더/푸터가 숨겨집니다 */
+            }
+            
+            body { 
+                background-color: white !important; 
+                font-size: 9pt; 
+                color: #000 !important;
+                margin: 0;
+                padding: 0;
+            }
+
             .no-print { display: none !important; }
-            .print-area { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            
+            /* 실제 내용물에 여백 부여 (헤더/푸터 대신) */
+            .print-area { 
+                display: block !important; 
+                width: 100% !important; 
+                margin: 0 !important; 
+                padding: 1.5cm 1cm !important; 
+                box-sizing: border-box;
+            }
+            
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             
             .print-table { border-color: #000 !important; }
             .print-cell { border-color: #000 !important; }
             .print-header-cell { border-bottom-color: #000 !important; }
-            
             .print-row { page-break-inside: avoid !important; }
-            
-            /* Portrait (세로) 설정 */
-            @page { size: A4 portrait; margin: 1.5cm 1cm; }
-            body { background-color: white !important; font-size: 9pt; color: #000 !important; }
-            .auto-list li { margin-bottom: 4px !important; }
 
-            /* 인쇄 시 타이틀 강제 표시 */
-            .print-title { display: block !important; text-align: center; margin-bottom: 20px; font-size: 18pt; font-weight: bold; }
+            .print-title { display: block !important; text-align: center; margin-bottom: 30px; font-size: 20pt; font-weight: bold; color: #000; }
         }
 
-        /* 화면에서는 숨김 (미리보기 섹션 내부에서만 표시되도록) */
         .print-title { display: none; }
 
         .loading-overlay {
@@ -85,7 +98,6 @@
             display: none; justify-content: center; align-items: center;
         }
 
-        /* 모달 스타일 */
         .modal-backdrop {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
@@ -119,7 +131,6 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase mb-1">월</label>
                     <div class="grid grid-cols-4 gap-2">
-                        <!-- 월 버튼들은 JS에서 생성 -->
                         <div id="modal-month-buttons" class="contents"></div>
                     </div>
                 </div>
@@ -256,7 +267,7 @@
             </div>
         </section>
 
-        <!-- 인쇄/통합 보고 섹션 -->
+        <!-- 인쇄 섹션 -->
         <section id="section-monthly" class="hidden animate-fade-in">
             <div class="flex justify-between items-center mb-5 no-print">
                 <h2 class="text-lg font-bold text-slate-800">월간 통합 보고서 미리보기</h2>
@@ -268,7 +279,7 @@
                 </div>
             </div>
             <div id="monthly-report-content" class="print-area">
-                <!-- JS에서 생성됨 -->
+                <!-- 내용 생성 -->
             </div>
         </section>
 
@@ -357,13 +368,8 @@
             selectMonthInModal(new Date().getMonth() + 1);
         }
 
-        function openMonthModal() {
-            document.getElementById('modal-month-select').style.display = 'flex';
-        }
-
-        function closeMonthModal() {
-            document.getElementById('modal-month-select').style.display = 'none';
-        }
+        function openMonthModal() { document.getElementById('modal-month-select').style.display = 'flex'; }
+        function closeMonthModal() { document.getElementById('modal-month-select').style.display = 'none'; }
 
         function selectMonthInModal(m) {
             selectedMonth = m;
@@ -464,17 +470,13 @@
                             <ul class="auto-list">${formatToList(r.prayer)}</ul>
                         </div>
                     </div>
-                    <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 text-[10px] text-slate-400 italic">
-                        ※ 수정이 필요한 경우 보고서를 삭제하고 다시 작성해주세요.
-                    </div>
                 </div>
             `;
         }
 
         async function deleteReport(id) {
-            if(!confirm("이 보고서를 정말 삭제하시겠습니까? (삭제 후 재작성 가능)")) return;
+            if(!confirm("이 보고서를 정말 삭제하시겠습니까?")) return;
             toggleLoading(true);
-            
             const isGasEnv = typeof google !== 'undefined' && google.script && google.script.run;
             if (isGasEnv) {
                 google.script.run.withSuccessHandler(async () => {
@@ -510,14 +512,11 @@
             }
 
             const container = document.getElementById('monthly-report-content');
-            
             let html = `
                 <div class="print-title">${reportTitle}</div>
-
                 <div class="text-center pb-4 mb-6 no-print">
                     <h1 class="text-xl font-bold text-slate-900">${reportTitle}</h1>
                 </div>
-                
                 <table class="print-table">
                     <thead>
                         <tr class="print-row">
@@ -537,24 +536,14 @@
                             <div class="text-base text-slate-800 font-normal">${r.dept}</div>
                             <div class="text-[10px] text-slate-500 mt-0.5 font-normal">(${r.writer})</div>
                         </td>
-                        <td class="print-cell">
-                            <ul class="auto-list">${formatToList(r.activity)}</ul>
-                        </td>
-                        <td class="print-cell">
-                            <ul class="auto-list">${formatToList(r.plans)}</ul>
-                        </td>
-                        <td class="print-cell">
-                            <ul class="auto-list">${formatToList(r.prayer)}</ul>
-                        </td>
+                        <td class="print-cell"><ul class="auto-list">${formatToList(r.activity)}</ul></td>
+                        <td class="print-cell"><ul class="auto-list">${formatToList(r.plans)}</ul></td>
+                        <td class="print-cell"><ul class="auto-list">${formatToList(r.prayer)}</ul></td>
                     </tr>
                 `;
             });
 
-            html += `
-                    </tbody>
-                </table>
-            `;
-
+            html += `</tbody></table>`;
             container.innerHTML = html;
             showSection('monthly');
         }
@@ -608,7 +597,6 @@
         document.getElementById('report-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             toggleLoading(true);
-            
             const data = {
                 id: "ID_" + Date.now(),
                 dept: document.getElementById('dept').value,
@@ -618,9 +606,7 @@
                 plans: document.getElementById('plans').value,
                 prayer: document.getElementById('prayer').value
             };
-            
             const isGasEnv = typeof google !== 'undefined' && google.script && google.script.run;
-            
             const onSaveSuccess = async () => {
                 await loadReports();
                 document.getElementById('report-form').reset();
@@ -628,7 +614,6 @@
                 toggleLoading(false);
                 showToast("보고서가 저장되었습니다.");
             };
-
             if (isGasEnv) {
                 google.script.run.withSuccessHandler(onSaveSuccess).saveReport(data);
             } else {
