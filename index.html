@@ -53,12 +53,11 @@
             padding: 10px 5px;
         }
 
-        /* 인쇄 전용 스타일 - 헤더/푸터 제거 핵심 */
+        /* 인쇄 전용 스타일 */
         @media print {
-            /* 브라우저 기본 헤더/푸터(URL, 날짜 등) 제거 */
             @page { 
                 size: A4 portrait; 
-                margin: 0; /* 마진을 0으로 설정하면 브라우저 헤더/푸터가 숨겨집니다 */
+                margin: 0; 
             }
             
             body { 
@@ -71,7 +70,6 @@
 
             .no-print { display: none !important; }
             
-            /* 실제 내용물에 여백 부여 (헤더/푸터 대신) */
             .print-area { 
                 display: block !important; 
                 width: 100% !important; 
@@ -207,6 +205,7 @@
                                 <option value="유치유년부">유치유년부</option>
                                 <option value="중고등부">중고등부</option>
                                 <option value="청년부">청년부</option>
+                                <option value="EM">EM</option>
                                 <option value="선교부">선교부</option>
                                 <option value="관리부">관리부</option>
                                 <option value="봉사부">봉사부</option>
@@ -215,7 +214,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">작성자</label>
-                            <input type="text" id="writer" required class="w-full border-slate-200 rounded-lg p-2 border focus:ring-1 focus:ring-indigo-500 outline-none text-sm" placeholder="이름 입력">
+                            <input type="text" id="writer" required class="w-full border-slate-200 rounded-lg p-2 border focus:ring-1 focus:ring-indigo-500 outline-none text-sm" placeholder="이름 입력 (Enter name)">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">날짜</label>
@@ -226,15 +225,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="space-y-1.5">
                             <label class="block text-sm font-bold text-blue-700">이번 달 사역 활동</label>
-                            <textarea id="activity" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-blue-400 outline-none text-sm leading-relaxed" placeholder="1. 활동 내용을 적어주세요."></textarea>
+                            <textarea id="activity" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-blue-400 outline-none text-sm leading-relaxed" placeholder="1. 활동 내용을 적어주세요. (Please write your activities.)"></textarea>
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-sm font-bold text-emerald-700">다음 달 사역 계획</label>
-                            <textarea id="plans" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-emerald-400 outline-none text-sm leading-relaxed" placeholder="1. 계획을 적어주세요."></textarea>
+                            <textarea id="plans" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-emerald-400 outline-none text-sm leading-relaxed" placeholder="1. 계획을 적어주세요. (Please write your plans.)"></textarea>
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-sm font-bold text-violet-700">기타 및 건의사항</label>
-                            <textarea id="prayer" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-violet-400 outline-none text-sm leading-relaxed" placeholder="건의 및 기도제목"></textarea>
+                            <textarea id="prayer" rows="8" class="auto-number-target w-full border-slate-200 rounded-lg p-3 border focus:ring-1 focus:ring-violet-400 outline-none text-sm leading-relaxed" placeholder="건의 및 기도제목 (Requests or Prayer topics)"></textarea>
                         </div>
                     </div>
 
@@ -278,9 +277,7 @@
                     <button onclick="showSection('list')" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-bold text-sm hover:bg-slate-200 transition">닫기</button>
                 </div>
             </div>
-            <div id="monthly-report-content" class="print-area">
-                <!-- 내용 생성 -->
-            </div>
+            <div id="monthly-report-content" class="print-area"></div>
         </section>
 
     </main>
