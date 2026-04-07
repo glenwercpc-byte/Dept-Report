@@ -48,7 +48,7 @@
     <div id="loading" class="loading-overlay">
         <div class="flex flex-col items-center">
             <i class="fas fa-spinner fa-spin text-3xl text-indigo-500 mb-2"></i>
-            <p class="font-bold text-sm text-slate-600">데이터 로딩 중...</p>
+            <p class="font-bold text-sm text-slate-600">데이터 동기화 중...</p>
         </div>
     </div>
 
@@ -61,12 +61,12 @@
             <div class="flex items-center gap-2">
                 <button onclick="resetView()" class="group flex items-center gap-1.5 hover:text-indigo-100 transition text-xs font-medium px-2 py-1.5">
                     <i id="reset-icon" class="fas fa-redo-alt rotate-reset text-[10px]"></i>
-                    초기화
+                    동기화
                 </button>
                 
                 <div class="flex items-center gap-2 ml-2 border-l border-indigo-500 pl-4">
-                    <button onclick="showMonthlySummary()" class="bg-indigo-500/50 border border-indigo-300/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white hover:text-indigo-700 transition">
-                        이번 달 전체 보기
+                    <button onclick="openMonthlyFilter()" class="bg-indigo-500/50 border border-indigo-300/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white hover:text-indigo-700 transition">
+                        월별 전체 보기
                     </button>
                     <button onclick="openCreateForm()" class="bg-white text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-50 transition shadow-sm">
                         새 보고서 작성
@@ -81,7 +81,7 @@
         <!-- Dashboard -->
         <div id="dashboard" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 no-print">
             <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-8 border-blue-400">
-                <p class="text-[13px] text-slate-500 font-bold uppercase tracking-tight mb-1">전체 보고서</p>
+                <p class="text-[13px] text-slate-500 font-bold uppercase tracking-tight mb-1">전체 보고서 수</p>
                 <h2 id="total-count" class="text-3xl text-slate-900 leading-tight">0</h2>
             </div>
             <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-8 border-indigo-400">
@@ -89,7 +89,7 @@
                 <h2 id="month-count" class="text-3xl text-slate-900 leading-tight">0</h2>
             </div>
             <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-8 border-orange-400">
-                <p class="text-[13px] text-slate-500 font-bold uppercase tracking-tight mb-2">이번 달 작성 부서</p>
+                <p class="text-[13px] text-slate-500 font-bold uppercase tracking-tight mb-2">이번 달 활동 부서</p>
                 <div id="active-depts" class="flex flex-wrap gap-1.5"></div>
             </div>
         </div>
@@ -173,23 +173,48 @@
             <div id="report-detail-container"></div>
             
             <div id="empty-state" class="text-center py-16 bg-white rounded-xl border-2 border-dashed border-slate-100">
-                <i class="fas fa-folder-open text-slate-200 text-4xl mb-3"></i>
-                <p class="text-slate-400 text-sm">조회할 부서를 검색하거나 상단 '새 보고서'를 클릭하세요.</p>
+                <i class="fas fa-cloud-download-alt text-slate-200 text-4xl mb-3"></i>
+                <p class="text-slate-400 text-sm">부서명을 검색하거나 상단 동기화 버튼을 눌러 데이터를 불러오세요.</p>
             </div>
         </section>
 
-        <!-- Section: Monthly (Print) -->
+        <!-- Section: Monthly Summary (Print) -->
         <section id="section-monthly" class="hidden animate-fade-in">
-            <div class="flex justify-between items-center mb-5 no-print">
-                <h2 class="text-lg font-bold text-slate-800">월간 통합 보고서 미리보기</h2>
+            <!-- Filter UI -->
+            <div class="no-print bg-white p-5 rounded-xl shadow-md border border-indigo-100 mb-6 flex flex-wrap items-end gap-4">
+                <div class="flex-grow">
+                    <h2 class="text-indigo-800 font-black text-sm mb-3 flex items-center gap-2">
+                        <i class="fas fa-filter"></i> 조회 년도 및 월 선택
+                    </h2>
+                    <div class="flex gap-3">
+                        <div class="w-1/2">
+                            <label class="block text-[10px] font-bold text-slate-400 mb-1">년도</label>
+                            <select id="filter-year" class="w-full border-slate-200 rounded-lg p-2 border focus:ring-1 focus:ring-indigo-500 outline-none text-sm"></select>
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block text-[10px] font-bold text-slate-400 mb-1">월</label>
+                            <select id="filter-month" class="w-full border-slate-200 rounded-lg p-2 border focus:ring-1 focus:ring-indigo-500 outline-none text-sm">
+                                <option value="01">1월</option><option value="02">2월</option><option value="03">3월</option><option value="04">4월</option>
+                                <option value="05">5월</option><option value="06">6월</option><option value="07">7월</option><option value="08">8월</option>
+                                <option value="09">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 <div class="flex gap-2">
-                    <button onclick="window.print()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-700 transition flex items-center gap-2 text-sm">
-                        <i class="fas fa-print"></i> 인쇄 / PDF 저장
+                    <button onclick="generateMonthlyReport()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-indigo-700 transition flex items-center gap-2 text-sm shadow-sm">
+                        <i class="fas fa-search"></i> 보고서 생성
                     </button>
-                    <button onclick="showSection('list')" class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-bold text-sm">닫기</button>
+                    <button onclick="window.print()" class="bg-slate-800 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-slate-900 transition flex items-center gap-2 text-sm shadow-sm">
+                        <i class="fas fa-print"></i> 인쇄 / PDF
+                    </button>
+                    <button onclick="showSection('list')" class="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-lg font-bold text-sm hover:bg-slate-200 transition">닫기</button>
                 </div>
             </div>
-            <div id="monthly-report-content" class="print-area space-y-6"></div>
+
+            <div id="monthly-report-content" class="print-area space-y-6 min-h-[400px]">
+                <!-- Content generated dynamically -->
+            </div>
         </section>
 
     </main>
@@ -197,25 +222,35 @@
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-lg opacity-0 transition-opacity pointer-events-none z-[9999] shadow-lg text-xs font-medium"></div>
 
     <script>
-        /**
-         * 외부에서 실행 시 필요한 설정
-         * GAS에서 [배포] -> [새 배포] -> [웹 앱]으로 배포한 URL을 여기에 입력하세요.
-         */
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyElIlVqWvHOl3Cs96zzxx8xaynZYmjKCBZ6MUALfKqncSdYzQfLz6zDwKjiHjLCletAA/exec"; 
-
         let allReports = [];
 
         window.onload = () => {
+            initFilterOptions();
             loadReports();
             setupAutoNumbering();
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
         };
 
+        // Filter UI 초기화 (최근 5년)
+        function initFilterOptions() {
+            const yearSelect = document.getElementById('filter-year');
+            const monthSelect = document.getElementById('filter-month');
+            const currentYear = new Date().getFullYear();
+            const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+            
+            for(let i=0; i<5; i++) {
+                const opt = document.createElement('option');
+                opt.value = currentYear - i;
+                opt.innerText = (currentYear - i) + '년';
+                yearSelect.appendChild(opt);
+            }
+            monthSelect.value = currentMonth;
+        }
+
         function toggleLoading(show) {
             document.getElementById('loading').style.display = show ? 'flex' : 'none';
         }
 
-        // 공통 데이터 로딩 함수 (GAS 내부 또는 외부 API 호출)
         async function loadReports() {
             toggleLoading(true);
             const isGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -226,28 +261,13 @@
                     updateDashboard();
                     toggleLoading(false);
                 }).getReports();
-            } else if (GAS_WEB_APP_URL) {
-                // GitHub 등 외부 환경에서 API 호출
-                try {
-                    const response = await fetch(`${GAS_WEB_APP_URL}?action=getReports`);
-                    const data = await response.json();
-                    allReports = data || [];
-                    updateDashboard();
-                } catch (e) {
-                    console.error("API 연동 오류:", e);
-                    showToast("서버 연결 실패. 로컬 데이터를 사용합니다.");
-                    allReports = JSON.parse(localStorage.getItem('church_reports_v2')) || [];
-                    updateDashboard();
-                } finally {
-                    toggleLoading(false);
-                }
             } else {
-                // 로컬 모드
+                // Mock behavior for testing
                 setTimeout(() => {
                     allReports = JSON.parse(localStorage.getItem('church_reports_v2')) || [];
                     updateDashboard();
                     toggleLoading(false);
-                }, 400);
+                }, 800);
             }
         }
 
@@ -274,14 +294,18 @@
         }
 
         function showSection(section) {
-            ['form', 'list', 'monthly'].forEach(s => document.getElementById(`section-${s}`).classList.add('hidden'));
+            ['form', 'list', 'monthly'].forEach(s => {
+                const el = document.getElementById(`section-${s}`);
+                if(el) el.classList.add('hidden');
+            });
             document.getElementById(`section-${section}`).classList.remove('hidden');
         }
 
         function executeSearch() {
             const term = document.getElementById('search').value.toLowerCase().trim();
-            if (!term) return;
-            const filtered = allReports.filter(r => r.dept.includes(term) || (r.writer && r.writer.includes(term)));
+            const filtered = term 
+                ? allReports.filter(r => r.dept.includes(term) || (r.writer && r.writer.includes(term)))
+                : allReports;
             displaySearchList(filtered);
         }
 
@@ -321,20 +345,21 @@
                            <i class="fas fa-file-alt mr-1"></i> ${r.date} ${r.dept} 보고서 <span class="mx-2 text-indigo-300">|</span> <span class="font-bold">작성자: ${r.writer}</span>
                         </h2>
                         <div class="flex gap-2">
+                             <button onclick="editReport('${r.id}')" class="text-[10px] bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2 py-1 rounded-md font-bold transition">수정</button>
                              <button onclick="deleteReport('${r.id}')" class="text-[10px] bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 px-2 py-1 rounded-md font-bold transition">삭제</button>
                         </div>
                     </div>
                     <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div class="space-y-2">
-                            <h4 class="text-blue-700 font-bold border-b border-blue-100 pb-1 flex items-center gap-1.5 text-xs"><i class="fas fa-check-circle text-[10px]"></i> 활동 내용</h4>
+                            <h4 class="text-blue-700 font-bold border-b border-blue-100 pb-1 flex items-center gap-1.5 text-xs"><i class="fas fa-check-circle text-[10px]"></i> 이번 달 사역 활동</h4>
                             <ul class="auto-list">${formatToList(r.activity)}</ul>
                         </div>
                         <div class="space-y-2">
-                            <h4 class="text-emerald-700 font-bold border-b border-emerald-100 pb-1 flex items-center gap-1.5 text-xs"><i class="fas fa-arrow-right text-[10px]"></i> 차후 계획</h4>
+                            <h4 class="text-emerald-700 font-bold border-b border-emerald-100 pb-1 flex items-center gap-1.5 text-xs"><i class="fas fa-arrow-right text-[10px]"></i> 다음 달 사역 계획</h4>
                             <ul class="auto-list">${formatToList(r.plans)}</ul>
                         </div>
                         <div class="space-y-2">
-                            <h4 class="text-violet-700 font-bold border-b border-violet-100 pb-1 flex items-center gap-1.5 text-xs"><i class="fas fa-lightbulb text-[10px]"></i> 건의/기타</h4>
+                            <h4 class="text-violet-700 font-bold border-b border-violet-100 pb-1 flex items-center gap-1.5 text-xs"><i class="fas fa-lightbulb text-[10px]"></i> 건의 및 기타사항</h4>
                             <ul class="auto-list">${formatToList(r.prayer)}</ul>
                         </div>
                     </div>
@@ -342,37 +367,37 @@
             `;
         }
 
+        function editReport(id) {
+            const r = allReports.find(rep => rep.id == id);
+            if (!r) return;
+            
+            document.getElementById('edit-id').value = r.id;
+            document.getElementById('dept').value = r.dept;
+            document.getElementById('writer').value = r.writer;
+            document.getElementById('date').value = r.date;
+            document.getElementById('activity').value = r.activity;
+            document.getElementById('plans').value = r.plans;
+            document.getElementById('prayer').value = r.prayer;
+            
+            document.getElementById('form-title').innerText = "보고서 수정";
+            showSection('form');
+        }
+
         async function deleteReport(id) {
-            if(!confirm("이 보고서를 삭제하시겠습니까?")) return;
+            if(!confirm("이 보고서를 영구 삭제하시겠습니까?")) return;
             toggleLoading(true);
             
             const isGas = typeof google !== 'undefined' && google.script && google.script.run;
             if (isGas) {
                 google.script.run.withSuccessHandler(() => {
-                    showToast("삭제되었습니다.");
+                    showToast("삭제 완료");
                     loadReports();
                 }).deleteReport(id);
-            } else if (GAS_WEB_APP_URL) {
-                try {
-                    await fetch(`${GAS_WEB_APP_URL}`, {
-                        method: 'POST',
-                        mode: 'no-cors', // CORS 제한으로 인해 no-cors 사용 시 응답 확인 불가하나 전송은 가능
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'delete', id: id })
-                    });
-                    showToast("삭제 요청을 보냈습니다. (잠시 후 새로고침)");
-                    setTimeout(loadReports, 2000);
-                } catch (e) {
-                    showToast("삭제 실패");
-                } finally {
-                    toggleLoading(false);
-                }
             } else {
-                allReports = allReports.filter(rep => rep.id !== id);
+                allReports = allReports.filter(rep => rep.id != id);
                 localStorage.setItem('church_reports_v2', JSON.stringify(allReports));
-                showToast("로컬에서 삭제되었습니다.");
+                showToast("삭제됨");
                 updateDashboard();
-                document.getElementById('report-detail-container').innerHTML = '';
                 executeSearch();
                 toggleLoading(false);
             }
@@ -383,25 +408,43 @@
             return text.split('\n').filter(l => l.trim()).map(l => `<li>${l.replace(/^\d+[\.\)]\s*/, '')}</li>`).join('');
         }
 
-        function showMonthlySummary() {
-            const now = new Date();
-            const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        function openMonthlyFilter() {
+            showSection('monthly');
+            generateMonthlyReport(); 
+        }
+
+        // 선택된 년/월 기반으로 보고서 생성
+        function generateMonthlyReport() {
+            const year = document.getElementById('filter-year').value;
+            const month = document.getElementById('filter-month').value;
+            const prefix = `${year}-${month}`;
+            
             const monthReports = allReports.filter(r => r.date && r.date.startsWith(prefix)).sort((a,b) => a.dept.localeCompare(b.dept));
+            const container = document.getElementById('monthly-report-content');
             
             if (!monthReports.length) {
-                showToast("이번 달 데이터가 없습니다.");
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-20 text-slate-300">
+                        <i class="fas fa-folder-open text-6xl mb-4"></i>
+                        <p class="text-lg font-bold">${year}년 ${parseInt(month)}월 데이터가 없습니다.</p>
+                        <p class="text-sm">다른 년도나 월을 선택해 보세요.</p>
+                    </div>
+                `;
                 return;
             }
 
-            const container = document.getElementById('monthly-report-content');
-            container.innerHTML = `<div class="text-center pb-4 border-b-2 border-indigo-500 mb-6"><h1 class="text-2xl font-black text-slate-900">${now.getFullYear()}년 ${now.getMonth()+1}월 부서 사역 통합 보고</h1></div>`;
+            container.innerHTML = `
+                <div class="text-center pb-4 border-b-2 border-indigo-500 mb-6">
+                    <h1 class="text-2xl font-black text-slate-900">${year}년 ${parseInt(month)}월 부서 사역 통합 보고</h1>
+                </div>
+            `;
 
             monthReports.forEach(r => {
                 const div = document.createElement('div');
-                div.className = `bg-white p-4 rounded-lg border border-slate-200 break-inside-avoid shadow-sm`;
+                div.className = `bg-white p-4 rounded-lg border border-slate-200 break-inside-avoid shadow-sm mb-4`;
                 div.innerHTML = `
                     <div class="flex justify-between items-center border-b border-slate-100 pb-1 mb-3">
-                        <h3 class="text-sm font-bold text-indigo-900">${r.date} ${r.dept} 보고서, 작성: ${r.writer}</h3>
+                        <h3 class="text-sm font-bold text-indigo-900">${r.date} ${r.dept} 보고서 (작성: ${r.writer})</h3>
                     </div>
                     <div class="print-grid grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
@@ -420,7 +463,7 @@
                 `;
                 container.appendChild(div);
             });
-            showSection('monthly');
+            showToast(`${parseInt(month)}월 보고서 조회 완료`);
         }
 
         function resetView() {
@@ -434,7 +477,7 @@
             document.getElementById('empty-state').classList.remove('hidden');
             showSection('list');
             loadReports();
-            showToast("데이터를 동기화했습니다.");
+            showToast("데이터 동기화 완료");
         }
 
         function setupAutoNumbering() {
@@ -461,12 +504,13 @@
             const t = document.getElementById('toast');
             t.innerText = msg;
             t.classList.replace('opacity-0', 'opacity-100');
-            setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 2000);
+            setTimeout(() => { t.classList.replace('opacity-100', 'opacity-0'); }, 2000);
         }
 
         function openCreateForm() {
             document.getElementById('report-form').reset();
             document.getElementById('edit-id').value = '';
+            document.getElementById('form-title').innerText = "새 사역 보고서 작성";
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
             showSection('form');
         }
@@ -475,7 +519,7 @@
             e.preventDefault();
             toggleLoading(true);
             const data = {
-                id: "ID_" + Date.now(),
+                id: document.getElementById('edit-id').value,
                 dept: document.getElementById('dept').value,
                 writer: document.getElementById('writer').value,
                 date: document.getElementById('date').value,
@@ -487,34 +531,20 @@
             const isGas = typeof google !== 'undefined' && google.script && google.script.run;
             if (isGas) {
                 google.script.run.withSuccessHandler(() => {
-                    showToast('성공적으로 저장되었습니다.');
+                    showToast('저장되었습니다.');
                     loadReports();
                     showSection('list');
                 }).saveReport(data);
-            } else if (GAS_WEB_APP_URL) {
-                try {
-                    // 외부 서버(GAS)에 데이터 전송
-                    await fetch(`${GAS_WEB_APP_URL}`, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'save', ...data })
-                    });
-                    showToast('서버 전송 완료! 잠시 후 데이터가 동기화됩니다.');
-                    setTimeout(() => {
-                        loadReports();
-                        showSection('list');
-                    }, 2000);
-                } catch (e) {
-                    showToast('서버 저장 실패');
-                } finally {
-                    toggleLoading(false);
-                }
             } else {
                 let list = JSON.parse(localStorage.getItem('church_reports_v2')) || [];
-                list.unshift(data);
+                if(data.id) {
+                    list = list.map(r => r.id == data.id ? {...data} : r);
+                } else {
+                    data.id = "ID_" + Date.now();
+                    list.unshift(data);
+                }
                 localStorage.setItem('church_reports_v2', JSON.stringify(list));
-                showToast('로컬에 임시 저장되었습니다.');
+                showToast('로컬 저장됨');
                 loadReports();
                 showSection('list');
             }
