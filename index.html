@@ -92,7 +92,6 @@
                     <button onclick="toggleMonthlyModal()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-black hover:bg-indigo-700 transition flex items-center gap-2 shadow-sm">
                         월별 통합 보고서 <i class="fas fa-chevron-down opacity-50 text-[10px]"></i>
                     </button>
-                    <!-- Monthly Report Filter Modal -->
                     <div id="monthly-modal" class="hidden absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 animate-dropdown z-[1200]">
                         <h2 class="text-slate-900 font-black text-sm mb-3 text-center">통합 조회 기간 선택</h2>
                         <div class="grid grid-cols-2 gap-2 mb-4">
@@ -123,7 +122,6 @@
     </nav>
 
     <main class="max-w-6xl mx-auto p-4 md:p-6 mb-20">
-        <!-- Dashboard Area -->
         <div id="dashboard" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 no-print">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">총 누적 보고서</p>
@@ -149,9 +147,7 @@
 
             <div id="date-selection-area" class="hidden flex flex-wrap gap-2 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 mb-6"></div>
 
-            <!-- Content Area -->
             <div id="main-content-area">
-                <!-- Write Form Section -->
                 <div id="write-form-area" class="hidden form-overlay">
                     <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
                         <form id="report-form" class="p-6 md:p-8 space-y-8" onsubmit="submitForm(event)">
@@ -166,7 +162,8 @@
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[11px] font-black text-slate-500 uppercase ml-1">작성일</label>
-                                    <input type="text" id="form-date" readonly class="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl text-sm font-bold text-slate-600">
+                                    <!-- 수정된 부분: readonly를 제거하고 type을 date로 변경하여 입력 가능하게 함 -->
+                                    <input type="date" id="form-date" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
                                 </div>
                             </div>
 
@@ -197,7 +194,6 @@
                     </div>
                 </div>
 
-                <!-- Result Area -->
                 <div id="search-result-area">
                     <div class="text-center py-24 bg-white/50 rounded-3xl border border-dashed border-slate-300">
                         <i class="fas fa-search text-slate-300 text-5xl mb-6"></i>
@@ -207,7 +203,6 @@
             </div>
         </section>
 
-        <!-- Monthly Print View -->
         <section id="section-monthly" class="hidden">
             <div class="no-print flex justify-between items-center mb-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                  <button onclick="location.reload()" class="text-slate-600 px-5 py-2.5 rounded-xl font-bold text-sm border border-slate-200 hover:bg-slate-50"><i class="fas fa-arrow-left mr-2"></i> 돌아가기</button>
@@ -233,7 +228,6 @@
             loadReports();
         };
 
-        // Textarea Focus: Add "1. " only when clicked if empty
         function handleTextareaFocus(el) {
             if (el.value.trim() === "") {
                 el.value = "1. ";
@@ -290,13 +284,10 @@
                 deptFormSelect.appendChild(opt);
             });
             
-            // 초기 로드 시 날짜 설정
-            const today = new Date().toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            document.getElementById('form-date').value = today;
+            // 초기 로드 시 날짜 설정 (HTML5 date input 형식인 yyyy-mm-dd에 맞춰야 함)
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('form-date').value = formattedDate;
         }
 
         async function loadReports() {
@@ -358,13 +349,10 @@
                 searchBar.classList.add('hidden');
                 document.getElementById('report-form').reset();
                 
-                // 폼을 열 때마다 오늘 날짜 다시 갱신
-                const today = new Date().toLocaleDateString('ko-KR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                document.getElementById('form-date').value = today;
+                // 폼을 열 때마다 오늘 날짜 다시 갱신 (YYYY-MM-DD 형식)
+                const today = new Date();
+                const formattedDate = today.toISOString().split('T')[0];
+                document.getElementById('form-date').value = formattedDate;
                 
                 document.querySelectorAll('.auto-resize-textarea').forEach(ta => ta.style.height = '100px');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -441,6 +429,9 @@
         async function submitForm(e) {
             e.preventDefault();
             toggleLoading(true);
+            
+            // 실제 데이터 전송 시 form-date의 value를 사용하도록 로직 구성 필요
+            // 여기서는 시뮬레이션만 수행
             setTimeout(() => {
                 toggleLoading(false);
                 showToast("성공적으로 제출되었습니다!");
