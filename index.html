@@ -64,6 +64,13 @@
             transition: height 0.1s ease, border-color 0.2s;
             line-height: 1.6;
         }
+
+        .dept-btn-active {
+            background-color: #4f46e5 !important;
+            color: white !important;
+            border-color: #4338ca !important;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -122,6 +129,7 @@
     </nav>
 
     <main class="max-w-6xl mx-auto p-4 md:p-6 mb-20">
+        <!-- 대시보드 박스 -->
         <div id="dashboard" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 no-print">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">총 누적 보고서</p>
@@ -132,8 +140,10 @@
                 <h2 id="month-count" class="text-3xl font-black">0</h2>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-[10px] text-slate-400 font-bold uppercase mb-2">이번 달 제출 부서</p>
-                <div id="active-depts" class="flex flex-wrap gap-1"></div>
+                <p class="text-[10px] text-slate-400 font-bold uppercase mb-2">이번 달 제출 부서 (클릭 시 조회)</p>
+                <div id="active-depts" class="flex flex-wrap gap-1.5">
+                    <!-- 제출된 부서 버튼들이 여기에 생성됨 -->
+                </div>
             </div>
         </div>
 
@@ -145,9 +155,11 @@
                 </div>
             </div>
 
+            <!-- 날짜 선택 칩 영역 -->
             <div id="date-selection-area" class="hidden flex flex-wrap gap-2 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 mb-6"></div>
 
             <div id="main-content-area">
+                <!-- 작성 폼 -->
                 <div id="write-form-area" class="hidden form-overlay">
                     <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
                         <form id="report-form" class="p-6 md:p-8 space-y-8" onsubmit="submitForm(event)">
@@ -162,7 +174,6 @@
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[11px] font-black text-slate-500 uppercase ml-1">작성일</label>
-                                    <!-- 수정된 부분: readonly를 제거하고 type을 date로 변경하여 입력 가능하게 함 -->
                                     <input type="date" id="form-date" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
                                 </div>
                             </div>
@@ -194,15 +205,17 @@
                     </div>
                 </div>
 
+                <!-- 결과 조회 영역 (박스 안에서 보여줌) -->
                 <div id="search-result-area">
                     <div class="text-center py-24 bg-white/50 rounded-3xl border border-dashed border-slate-300">
                         <i class="fas fa-search text-slate-300 text-5xl mb-6"></i>
-                        <p class="text-slate-500 font-bold text-lg">검색어를 입력하거나 부서 칩을 클릭해 보고서를 조회하세요.</p>
+                        <p class="text-slate-500 font-bold text-lg">검색어를 입력하거나 상단 부서 버튼을 클릭해 보고서를 조회하세요.</p>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- 월별 통합 보고서 영역 (인쇄용) -->
         <section id="section-monthly" class="hidden">
             <div class="no-print flex justify-between items-center mb-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                  <button onclick="location.reload()" class="text-slate-600 px-5 py-2.5 rounded-xl font-bold text-sm border border-slate-200 hover:bg-slate-50"><i class="fas fa-arrow-left mr-2"></i> 돌아가기</button>
@@ -228,6 +241,7 @@
             loadReports();
         };
 
+        // 자동 리스트 및 높이 조절
         function handleTextareaFocus(el) {
             if (el.value.trim() === "") {
                 el.value = "1. ";
@@ -284,7 +298,6 @@
                 deptFormSelect.appendChild(opt);
             });
             
-            // 초기 로드 시 날짜 설정 (HTML5 date input 형식인 yyyy-mm-dd에 맞춰야 함)
             const today = new Date();
             const formattedDate = today.toISOString().split('T')[0];
             document.getElementById('form-date').value = formattedDate;
@@ -309,6 +322,7 @@
             const result = [];
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
+                // 간단한 CSV 파싱 (큰따옴표 처리 포함)
                 const currentline = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
                 result.push({
                     id: (currentline[0] || '').replace(/"/g, '').trim(),
@@ -331,8 +345,11 @@
             
             const depts = [...new Set(monthReps.map(r => r.dept))].sort((a, b) => DEPARTMENTS.indexOf(a) - DEPARTMENTS.indexOf(b));
             const container = document.getElementById('active-depts');
+            
             container.innerHTML = depts.map(d => 
-                `<button onclick="searchByDept('${d}')" class="bg-slate-100 text-slate-700 text-[10px] font-black px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-indigo-600 hover:text-white transition">${d}</button>`
+                `<button id="btn-dept-${d}" onclick="searchByDept('${d}')" class="dept-action-btn bg-white text-indigo-600 text-[11px] font-black px-3 py-1.5 rounded-xl border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-400 transition shadow-sm">
+                    ${d}
+                </button>`
             ).join('') || '<span class="text-xs text-slate-300 italic">제출 없음</span>';
         }
 
@@ -349,7 +366,6 @@
                 searchBar.classList.add('hidden');
                 document.getElementById('report-form').reset();
                 
-                // 폼을 열 때마다 오늘 날짜 다시 갱신 (YYYY-MM-DD 형식)
                 const today = new Date();
                 const formattedDate = today.toISOString().split('T')[0];
                 document.getElementById('form-date').value = formattedDate;
@@ -364,9 +380,21 @@
             }
         }
 
+        // 부서 버튼 클릭 시 조회 로직
         function searchByDept(name) {
+            // 1. 검색어 입력창 업데이트
             document.getElementById('search').value = name;
+            
+            // 2. 대시보드 버튼 스타일 활성화 효과
+            document.querySelectorAll('.dept-action-btn').forEach(btn => btn.classList.remove('dept-btn-active'));
+            const targetBtn = document.getElementById(`btn-dept-${name}`);
+            if(targetBtn) targetBtn.classList.add('dept-btn-active');
+
+            // 3. 실제 검색 수행
             handleSearch(name);
+
+            // 4. 결과 영역으로 부드럽게 이동
+            document.getElementById('search-bar-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function handleSearch(term) {
@@ -379,7 +407,8 @@
 
             if (!trimmed) {
                 dateArea.classList.add('hidden');
-                resultArea.innerHTML = `<div class="text-center py-24 bg-white/50 rounded-3xl border border-dashed border-slate-300"><p class="text-slate-500 font-bold text-lg">검색어를 입력하거나 부서 칩을 클릭해 보고서를 조회하세요.</p></div>`;
+                resultArea.innerHTML = `<div class="text-center py-24 bg-white/50 rounded-3xl border border-dashed border-slate-300"><p class="text-slate-500 font-bold text-lg">검색어를 입력하거나 상단 부서 버튼을 클릭해 보고서를 조회하세요.</p></div>`;
+                document.querySelectorAll('.dept-action-btn').forEach(btn => btn.classList.remove('dept-btn-active'));
                 return;
             }
 
@@ -394,14 +423,16 @@
                 return;
             }
 
+            // 날짜 선택 칩 생성 (최신순)
             dateArea.classList.remove('hidden');
             dateArea.innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(r => `
                 <button onclick="renderDetailById('${r.id}')" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold shadow-sm hover:border-indigo-400 hover:text-indigo-600 transition">
-                    ${r.date} - ${r.dept}
+                    ${r.date.split(' ')[0]} - ${r.dept}
                 </button>
             `).join('');
 
-            renderDetail(filtered[0]);
+            // 가장 최근 보고서 자동 렌더링
+            renderDetail(filtered.sort((a,b) => new Date(b.date) - new Date(a.date))[0]);
         }
 
         function renderDetailById(id) {
@@ -426,12 +457,23 @@
             `;
         }
 
+        // 폼 제출 로직 (백엔드와 연결 시 이 부분의 fetch 활용)
         async function submitForm(e) {
             e.preventDefault();
             toggleLoading(true);
             
-            // 실제 데이터 전송 시 form-date의 value를 사용하도록 로직 구성 필요
-            // 여기서는 시뮬레이션만 수행
+            // 실제 데이터 전송 예시 (서버 배포 후 앱스 스크립트 URL로 변경 필요)
+            /*
+            const formData = {
+                dept: document.getElementById('form-dept').value,
+                writer: document.getElementById('form-writer').value,
+                activity: document.getElementById('form-activity').value,
+                plans: document.getElementById('form-plans').value,
+                prayer: document.getElementById('form-prayer').value
+            };
+            await fetch('YOUR_GAS_URL', { method: 'POST', body: JSON.stringify(formData) });
+            */
+
             setTimeout(() => {
                 toggleLoading(false);
                 showToast("성공적으로 제출되었습니다!");
