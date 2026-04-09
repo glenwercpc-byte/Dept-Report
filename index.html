@@ -181,15 +181,15 @@
                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 <div class="space-y-2">
                                     <label class="text-[11px] font-black text-indigo-600 uppercase ml-1 flex items-center gap-2"><i class="fas fa-tasks"></i> 활동 내역</label>
-                                    <textarea id="form-activity" required placeholder="클릭하여 내용을 입력하세요..." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
+                                    <textarea id="form-activity" required placeholder="내용이 없으면 자동으로 건너뜁니다." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[11px] font-black text-emerald-600 uppercase ml-1 flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 사역 계획</label>
-                                    <textarea id="form-plans" required placeholder="클릭하여 내용을 입력하세요..." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
+                                    <textarea id="form-plans" placeholder="내용이 없으면 자동으로 건너뜁니다." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[11px] font-black text-amber-600 uppercase ml-1 flex items-center gap-2"><i class="fas fa-comment-dots"></i> 건의사항 및 기타</label>
-                                    <textarea id="form-prayer" placeholder="클릭하여 내용을 입력하세요..." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-amber-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
+                                    <textarea id="form-prayer" placeholder="내용이 없으면 자동으로 건너뜁니다." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-amber-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
                                 </div>
                             </div>
                             
@@ -269,7 +269,7 @@
                 if (match) {
                     nextNum = parseInt(match[1]) + 1;
                 } else {
-                   nextNum = lines.length + 1;
+                    nextNum = lines.length + 1;
                 }
 
                 const insertText = `\n${nextNum}. `;
@@ -277,6 +277,11 @@
                 const newPos = cursorPos + insertText.length;
                 el.setSelectionRange(newPos, newPos);
                 handleTextareaInput(el);
+            }
+            
+            // 내용이 "1. "만 남은 상태에서 백스페이스를 누르면 아예 비움
+            if (e.key === 'Backspace' && el.value.trim() === "1.") {
+                el.value = "";
             }
         }
 
@@ -322,7 +327,6 @@
             const result = [];
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
-                // 간단한 CSV 파싱 (큰따옴표 처리 포함)
                 const currentline = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
                 result.push({
                     id: (currentline[0] || '').replace(/"/g, '').trim(),
@@ -380,20 +384,12 @@
             }
         }
 
-        // 부서 버튼 클릭 시 조회 로직
         function searchByDept(name) {
-            // 1. 검색어 입력창 업데이트
             document.getElementById('search').value = name;
-            
-            // 2. 대시보드 버튼 스타일 활성화 효과
             document.querySelectorAll('.dept-action-btn').forEach(btn => btn.classList.remove('dept-btn-active'));
             const targetBtn = document.getElementById(`btn-dept-${name}`);
             if(targetBtn) targetBtn.classList.add('dept-btn-active');
-
-            // 3. 실제 검색 수행
             handleSearch(name);
-
-            // 4. 결과 영역으로 부드럽게 이동
             document.getElementById('search-bar-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -423,7 +419,6 @@
                 return;
             }
 
-            // 날짜 선택 칩 생성 (최신순)
             dateArea.classList.remove('hidden');
             dateArea.innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(r => `
                 <button onclick="renderDetailById('${r.id}')" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold shadow-sm hover:border-indigo-400 hover:text-indigo-600 transition">
@@ -431,7 +426,6 @@
                 </button>
             `).join('');
 
-            // 가장 최근 보고서 자동 렌더링
             renderDetail(filtered.sort((a,b) => new Date(b.date) - new Date(a.date))[0]);
         }
 
@@ -442,6 +436,12 @@
 
         function renderDetail(r) {
             const resultArea = document.getElementById('search-result-area');
+            
+            // 데이터가 비어있거나 넘버링(1. )만 있는 경우 필터링
+            const activityHtml = formatToList(r.activity);
+            const plansHtml = formatToList(r.plans);
+            const prayerHtml = formatToList(r.prayer);
+
             resultArea.innerHTML = `
                 <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden animate-dropdown">
                     <div class="bg-indigo-600 p-6 flex justify-between items-center text-white">
@@ -449,28 +449,36 @@
                         <div class="text-right"><span class="text-xs bg-white/20 px-3 py-1.5 rounded-full font-bold">작성자: ${r.writer}</span></div>
                     </div>
                     <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div><h4 class="text-xs font-black text-indigo-600 uppercase mb-4">활동 내역</h4><ul class="auto-list">${formatToList(r.activity)}</ul></div>
-                        <div><h4 class="text-xs font-black text-emerald-600 uppercase mb-4">사역 계획</h4><ul class="auto-list">${formatToList(r.plans)}</ul></div>
-                        <div><h4 class="text-xs font-black text-amber-600 uppercase mb-4">건의 및 기타</h4><ul class="auto-list">${formatToList(r.prayer)}</ul></div>
+                        ${activityHtml ? `<div><h4 class="text-xs font-black text-indigo-600 uppercase mb-4">활동 내역</h4><ul class="auto-list">${activityHtml}</ul></div>` : ''}
+                        ${plansHtml ? `<div><h4 class="text-xs font-black text-emerald-600 uppercase mb-4">사역 계획</h4><ul class="auto-list">${plansHtml}</ul></div>` : ''}
+                        ${prayerHtml ? `<div><h4 class="text-xs font-black text-amber-600 uppercase mb-4">건의 및 기타</h4><ul class="auto-list">${prayerHtml}</ul></div>` : ''}
+                        ${!activityHtml && !plansHtml && !prayerHtml ? '<div class="col-span-3 text-center text-slate-400 py-10">상세 내용이 없습니다.</div>' : ''}
                     </div>
                 </div>
             `;
         }
 
-        // 폼 제출 로직 (백엔드와 연결 시 이 부분의 fetch 활용)
         async function submitForm(e) {
             e.preventDefault();
             toggleLoading(true);
             
-            // 실제 데이터 전송 예시 (서버 배포 후 앱스 스크립트 URL로 변경 필요)
-            /*
+            // 데이터 클렌징: 넘버링만 있는 경우 빈 값으로 처리
+            const cleanText = (val) => {
+                const trimmed = val.trim();
+                return (trimmed === "1." || trimmed === "1. ") ? "" : trimmed;
+            };
+
             const formData = {
                 dept: document.getElementById('form-dept').value,
                 writer: document.getElementById('form-writer').value,
-                activity: document.getElementById('form-activity').value,
-                plans: document.getElementById('form-plans').value,
-                prayer: document.getElementById('form-prayer').value
+                date: document.getElementById('form-date').value,
+                activity: cleanText(document.getElementById('form-activity').value),
+                plans: cleanText(document.getElementById('form-plans').value),
+                prayer: cleanText(document.getElementById('form-prayer').value)
             };
+
+            // 실제 백엔드 연동 시 아래 주석 해제 및 앱스스크립트 연동
+            /*
             await fetch('YOUR_GAS_URL', { method: 'POST', body: JSON.stringify(formData) });
             */
 
@@ -500,16 +508,35 @@
             
             const container = document.getElementById('monthly-report-content');
             let html = `<div class="text-center mb-10"><h1 class="text-3xl font-black">${year}년 ${parseInt(month)}월 사역 통합 보고서</h1></div><table class="report-table"><thead><tr><th class="dept-col">부서/작성자</th><th class="content-col">활동 내역</th><th class="content-col">사역 계획</th><th class="content-col">건의사항 및 기타</th></tr></thead><tbody>`;
+            
             filtered.forEach(r => {
-                html += `<tr><td class="dept-col"><div class="font-black">${r.dept}</div><div class="text-[10px] text-slate-400 mt-1">${r.writer}</div></td><td><ul class="auto-list">${formatToList(r.activity)}</ul></td><td><ul class="auto-list">${formatToList(r.plans)}</ul></td><td><ul class="auto-list">${formatToList(r.prayer)}</ul></td></tr>`;
+                const act = formatToList(r.activity);
+                const pln = formatToList(r.plans);
+                const pry = formatToList(r.prayer);
+
+                html += `<tr>
+                    <td class="dept-col"><div class="font-black">${r.dept}</div><div class="text-[10px] text-slate-400 mt-1">${r.writer}</div></td>
+                    <td><ul class="auto-list">${act || '<li style="list-style:none; color:#cbd5e1;">-</li>'}</ul></td>
+                    <td><ul class="auto-list">${pln || '<li style="list-style:none; color:#cbd5e1;">-</li>'}</ul></td>
+                    <td><ul class="auto-list">${pry || '<li style="list-style:none; color:#cbd5e1;">-</li>'}</ul></td>
+                </tr>`;
             });
             html += `</tbody></table>`;
             container.innerHTML = html;
         }
 
+        // 텍스트를 리스트 HTML로 변환하는 핵심 함수
         function formatToList(text) {
-            if (!text || text === "" || text === "undefined") return '<li>내용 없음</li>';
-            return text.split('\n').filter(l => l.trim()).map(l => `<li>${l.replace(/^\d+[\.\)]\s*/, '')}</li>`).join('');
+            if (!text || text.trim() === "" || text === "undefined" || text.trim() === "1.") return null;
+            
+            // "1. "만 있는 행 제외 및 번호 마커 제거 후 li 태그로 변환
+            const lines = text.split('\n')
+                .map(l => l.trim())
+                .filter(l => l !== "" && l !== "1.");
+
+            if (lines.length === 0) return null;
+
+            return lines.map(l => `<li>${l.replace(/^\d+[\.\)]\s*/, '')}</li>`).join('');
         }
 
         function toggleMonthlyModal(force) {
