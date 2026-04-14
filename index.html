@@ -83,12 +83,12 @@
     <!-- Navigation -->
     <nav class="sticky top-0 z-[1100] no-print bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3">
         <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h1 onclick="location.reload()" class="text-xl font-black flex items-center gap-2 cursor-pointer text-slate-900 shrink-0">
+            <h1 onclick="resetAll()" class="text-xl font-black flex items-center gap-2 cursor-pointer text-slate-900 shrink-0">
                 <i class="fas fa-church text-indigo-600"></i> CCPC <span class="text-indigo-600">부서별 보고서</span>
             </h1>
             
             <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-sm">
-                <button onclick="location.reload()" class="px-4 py-2.5 bg-white text-slate-600 rounded-xl hover:bg-slate-50 transition border border-slate-200 group flex items-center gap-2 shadow-sm">
+                <button onclick="resetAll()" class="px-4 py-2.5 bg-white text-slate-600 rounded-xl hover:bg-slate-50 transition border border-slate-200 group flex items-center gap-2 shadow-sm">
                     <i class="fas fa-circle-notch text-sm group-hover:rotate-180 transition-transform duration-500"></i>
                     <span class="text-xs font-bold">초기화</span>
                 </button>
@@ -535,6 +535,14 @@
         }
 
         function exportToGoogleDocs() {
+            const year = currentMonthlyYear || document.getElementById('filter-year').value;
+            const month = currentMonthlyMonth || document.getElementById('filter-month').value;
+
+            if (!year || !month) {
+                showToast('먼저 보고서를 생성해주세요.');
+                return;
+            }
+
             const btn = document.getElementById('btn-export');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> 문서 생성 중...';
@@ -553,9 +561,9 @@
                 .withFailureHandler(function(err) {
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fab fa-google-drive"></i> 구글 독스/프린트 출력';
-                    showToast('문서 생성 실패: ' + err.message);
+                    showToast('문서 생성 실패: ' + (err && err.message ? err.message : JSON.stringify(err)));
                 })
-                .exportToGoogleDocs(currentMonthlyYear, currentMonthlyMonth);
+                .exportToGoogleDocs(year, month);
         }
 
         // ─────────────────────────────────────────────
@@ -599,6 +607,44 @@
             if (e.key === 'Backspace' && el.value.trim() === '1.') {
                 el.value = '';
             }
+        }
+
+        function resetAll() {
+            // 월별 보고서 화면 숨기기
+            document.getElementById('section-monthly').classList.add('hidden');
+            document.getElementById('monthly-report-content').innerHTML = '';
+
+            // 메인 화면 복원
+            document.getElementById('section-search').classList.remove('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+
+            // 폼 숨기기
+            document.getElementById('write-form-area').classList.add('hidden');
+            document.getElementById('form-id').value = '';
+
+            // 검색 초기화
+            document.getElementById('search').value = '';
+            document.getElementById('search-bar-container').classList.remove('hidden');
+            document.getElementById('date-selection-area').classList.add('hidden');
+            document.getElementById('search-result-area').innerHTML = `
+                <div class="text-center py-24 bg-white/50 rounded-3xl border border-dashed border-slate-300">
+                    <i class="fas fa-search text-slate-300 text-5xl mb-6"></i>
+                    <p class="text-slate-500 font-bold text-lg">검색어를 입력하거나 상단 부서 버튼을 클릭해 보고서를 조회하세요.</p>
+                </div>`;
+
+            // 부서 버튼 활성화 해제
+            document.querySelectorAll('.dept-action-btn').forEach(btn => btn.classList.remove('dept-btn-active'));
+
+            // 월별 모달 닫기
+            document.getElementById('monthly-modal').classList.add('hidden');
+
+            // 변수 초기화
+            currentMonthlyYear = '';
+            currentMonthlyMonth = '';
+            currentMonthlyReports = [];
+
+            // 데이터 새로고침
+            loadReports();
         }
 
         function cancelMonthlyReport() {
