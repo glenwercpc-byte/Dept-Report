@@ -263,18 +263,40 @@
         // ─────────────────────────────────────────────
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxF5ilSTQIL0sk8sOWEQGIn4t69YdcmUgMF8XKn4KXmc6RzuoLgju9z0O_nEshULuRJ6A/exec';
 
-        // GAS 호출 헬퍼 (google.script.run 대체)
-        async function gasCall(action, params, successHandler, failureHandler) {
-            try {
-                const url = GAS_URL + '?action=' + encodeURIComponent(action)
-                    + (params ? '&params=' + encodeURIComponent(JSON.stringify(params)) : '');
-                const res = await fetch(url);
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const data = await res.json();
-                if (typeof successHandler === 'function') successHandler(data);
-            } catch (e) {
-                if (typeof failureHandler === 'function') failureHandler(e);
+        // GAS 호출 헬퍼 — JSONP 방식 (CORS 우회)
+        function gasCall(action, params, successHandler, failureHandler) {
+            const cbName = '_cb_' + action + '_' + Date.now();
+            const script = document.createElement('script');
+
+            const timer = setTimeout(function() {
+                cleanup();
+                if (typeof failureHandler === 'function')
+                    failureHandler({ message: '요청 시간 초과' });
+            }, 15000);
+
+            function cleanup() {
+                clearTimeout(timer);
+                delete window[cbName];
+                if (script.parentNode) script.parentNode.removeChild(script);
             }
+
+            window[cbName] = function(data) {
+                cleanup();
+                if (typeof successHandler === 'function') successHandler(data);
+            };
+
+            const url = GAS_URL
+                + '?action=' + encodeURIComponent(action)
+                + '&callback=' + encodeURIComponent(cbName)
+                + (params ? '&params=' + encodeURIComponent(JSON.stringify(params)) : '');
+
+            script.onerror = function() {
+                cleanup();
+                if (typeof failureHandler === 'function')
+                    failureHandler({ message: '네트워크 오류 — Apps Script URL을 확인하세요.' });
+            };
+            script.src = url;
+            document.head.appendChild(script);
         }
 
         const DEPARTMENTS = ["총무부","교우부","새가족부","장학부","예배부","방송부","찬양부","장년교육부","유치유년부","중고등부","청년부","선교부","관리부","봉사부","재정부","장례위원회","목회실","EM"];
