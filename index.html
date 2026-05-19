@@ -263,37 +263,46 @@
         // ─────────────────────────────────────────────
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxF5ilSTQIL0sk8sOWEQGIn4t69YdcmUgMF8XKn4KXmc6RzuoLgju9z0O_nEshULuRJ6A/exec';
 
-        // GAS 호출 헬퍼 — JSONP 방식 (CORS 우회)
+        // GAS 호출 헬퍼 — JSONP (Apps Script CORS 우회 유일 방법)
         function gasCall(action, params, successHandler, failureHandler) {
-            const cbName = '_cb_' + action + '_' + Date.now();
+            const cbName = '__gascb_' + action.replace(/[^a-z]/gi,'') + '_' + Date.now();
             const script = document.createElement('script');
+            let done = false;
 
             const timer = setTimeout(function() {
+                if (done) return;
+                done = true;
                 cleanup();
                 if (typeof failureHandler === 'function')
-                    failureHandler({ message: '요청 시간 초과' });
+                    failureHandler({ message: '요청 시간 초과 (15초). Apps Script 배포 URL과 액세스 권한을 확인하세요.' });
             }, 15000);
 
             function cleanup() {
                 clearTimeout(timer);
-                delete window[cbName];
+                try { delete window[cbName]; } catch(e) {}
                 if (script.parentNode) script.parentNode.removeChild(script);
             }
 
             window[cbName] = function(data) {
+                if (done) return;
+                done = true;
                 cleanup();
                 if (typeof successHandler === 'function') successHandler(data);
             };
 
+            // Apps Script는 302 리다이렉트를 하는데,
+            // <script> 태그는 리다이렉트를 자동으로 따라가므로 JSONP가 작동함
             const url = GAS_URL
                 + '?action=' + encodeURIComponent(action)
-                + '&callback=' + encodeURIComponent(cbName)
+                + '&callback=' + cbName
                 + (params ? '&params=' + encodeURIComponent(JSON.stringify(params)) : '');
 
             script.onerror = function() {
+                if (done) return;
+                done = true;
                 cleanup();
                 if (typeof failureHandler === 'function')
-                    failureHandler({ message: '네트워크 오류 — Apps Script URL을 확인하세요.' });
+                    failureHandler({ message: 'Script 로드 실패. Apps Script URL을 브라우저에서 직접 열어 확인하세요.' });
             };
             script.src = url;
             document.head.appendChild(script);
