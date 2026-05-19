@@ -281,7 +281,7 @@
         // ─────────────────────────────────────────────
         // ★ GitHub Pages 설정: Google Apps Script 배포 URL을 아래에 입력하세요
         // ─────────────────────────────────────────────
-        const GAS_URL = localStorage.getItem('ccpc_gas_url') || '';
+        const GAS_URL = localStorage.getItem('https://script.google.com/macros/s/AKfycbwyy4GmSTLpbaj0BA8F0kMn5VSQ9zco1uE8MHEYGO8rAeBvhVrKpUGfdP64785LCuVxjg/exec') || '';
 
         // GAS 호출 헬퍼 (google.script.run 대체)
         async function gasCall(action, params, successHandler, failureHandler) {
