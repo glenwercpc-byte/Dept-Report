@@ -109,9 +109,6 @@
                     <i class="fas fa-circle-notch text-sm group-hover:rotate-180 transition-transform duration-500"></i>
                     <span class="text-xs font-bold">초기화</span>
                 </button>
-                <button onclick="showGasUrlBanner()" title="Apps Script URL 설정" class="px-3 py-2.5 bg-white text-slate-400 rounded-xl hover:bg-amber-50 hover:text-amber-600 transition border border-slate-200 shadow-sm">
-                    <i class="fas fa-cog text-sm"></i>
-                </button>
 
                 <div class="relative">
                     <button onclick="toggleMonthlyModal()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-black hover:bg-indigo-700 transition flex items-center gap-2 shadow-sm">
@@ -258,39 +255,16 @@
     </div>
 
     
-    <!-- GAS URL 설정 배너 -->
-    <div id="gas-banner" class="hidden fixed inset-x-0 bottom-0 z-[9990] no-print">
-        <div class="bg-slate-900 text-white px-6 py-5 shadow-2xl border-t border-slate-700 flex flex-col sm:flex-row items-center gap-4 max-w-3xl mx-auto mb-4 rounded-2xl">
-            <div class="flex-1 w-full">
-                <p class="text-sm font-black mb-1">⚙️ Google Apps Script URL 설정</p>
-                <p class="text-[11px] text-slate-400 mb-3">CCPC-DEPT.gs를 Apps Script에 배포한 후, 실행 URL을 아래에 입력하세요.</p>
-                <div class="flex gap-2">
-                    <input id="gas-url-input" type="url" placeholder="https://script.google.com/macros/s/..." 
-                        class="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-xl text-xs outline-none focus:border-indigo-400 text-white placeholder-slate-500">
-                    <button onclick="saveGasUrl()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-black transition whitespace-nowrap">저장</button>
-                    <button onclick="document.getElementById('gas-banner').classList.add('hidden')" 
-                        class="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs transition">닫기</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-8 py-4 rounded-2xl opacity-0 translate-y-4 transition-all z-[9999] text-sm font-bold shadow-2xl pointer-events-none"></div>
 
     <script>
         // ─────────────────────────────────────────────
-        // ★ GitHub Pages 설정: Google Apps Script 배포 URL을 아래에 입력하세요
+        // ★ Google Apps Script 배포 URL
         // ─────────────────────────────────────────────
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwyy4GmSTLpbaj0BA8F0kMn5VSQ9zco1uE8MHEYGO8rAeBvhVrKpUGfdP64785LCuVxjg/exec' || '';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxF5ilSTQIL0sk8sOWEQGIn4t69YdcmUgMF8XKn4KXmc6RzuoLgju9z0O_nEshULuRJ6A/exec';
 
         // GAS 호출 헬퍼 (google.script.run 대체)
         async function gasCall(action, params, successHandler, failureHandler) {
-            if (!GAS_URL) {
-                showGasUrlBanner();
-                if (typeof failureHandler === 'function')
-                    failureHandler({ message: 'Apps Script URL이 설정되지 않았습니다.' });
-                return;
-            }
             try {
                 const url = GAS_URL + '?action=' + encodeURIComponent(action)
                     + (params ? '&params=' + encodeURIComponent(JSON.stringify(params)) : '');
@@ -301,17 +275,6 @@
             } catch (e) {
                 if (typeof failureHandler === 'function') failureHandler(e);
             }
-        }
-
-        function showGasUrlBanner() {
-            document.getElementById('gas-banner').classList.remove('hidden');
-        }
-
-        function saveGasUrl() {
-            const val = document.getElementById('gas-url-input').value.trim();
-            if (!val.startsWith('https://')) { alert('올바른 URL을 입력하세요.'); return; }
-            localStorage.setItem('ccpc_gas_url', val);
-            location.reload();
         }
 
         const DEPARTMENTS = ["총무부","교우부","새가족부","장학부","예배부","방송부","찬양부","장년교육부","유치유년부","중고등부","청년부","선교부","관리부","봉사부","재정부","장례위원회","목회실","EM"];
@@ -325,12 +288,7 @@
         // ─────────────────────────────────────────────
         window.onload = () => {
             initOptions();
-            if (!GAS_URL) {
-                showGasUrlBanner();
-                toggleLoading(false);
-            } else {
-                loadReports();
-            }
+            loadReports();
         };
 
         function initOptions() {
