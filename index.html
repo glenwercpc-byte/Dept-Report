@@ -36,48 +36,23 @@
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
-        /* ── 공통 번호 리스트 */
         .auto-list { counter-reset: item; list-style-type: none; padding-left: 0; margin: 0; }
-        .auto-list li { display: flex; margin-bottom: 3px; line-height: 1.55; font-size: 0.82rem; }
-        .auto-list li::before {
-            content: counter(item) ". ";
-            counter-increment: item;
-            font-weight: 700;
-            margin-right: 5px;
-            color: #334155;
+        .auto-list li { display: flex; margin-bottom: 4px; line-height: 1.5; font-size: 0.9rem; }
+        .auto-list li::before { 
+            content: counter(item) ". "; 
+            counter-increment: item; 
+            font-weight: bold; 
+            margin-right: 8px; 
+            color: #6366f1;
             flex-shrink: 0;
         }
 
-        /* ── 통합 보고서 테이블 (docx 양식과 동일) */
-        .report-table {
-            width: 100%; border-collapse: collapse; table-layout: fixed;
-            border: 2px solid #000; background: #fff; font-size: 0.82rem;
-        }
-        .report-table th, .report-table td {
-            border: 1px solid #000; padding: 8px 7px;
-            vertical-align: top; word-break: break-word;
-        }
-        .report-table thead tr th {
-            background: #000; color: #fff; font-size: 0.8rem;
-            font-weight: 800; text-align: center; padding: 7px 5px;
-        }
-        .dept-col { width: 13%; vertical-align: middle !important; text-align: center; }
-        .content-col { width: 29%; }
-
-        /* ── 개별 보고서 단일 테이블 (화면 상세) */
-        .detail-table {
-            width: 100%; border-collapse: collapse; table-layout: fixed;
-            border: 2px solid #000; background: #fff; font-size: 0.82rem;
-        }
-        .detail-table th, .detail-table td {
-            border: 1px solid #000; padding: 8px 7px;
-            vertical-align: top; word-break: break-word;
-        }
-        .detail-table thead tr th {
-            background: #000; color: #fff; font-size: 0.8rem;
-            font-weight: 800; text-align: center; padding: 7px 5px;
-        }
-        .detail-dept-col { width: 14%; vertical-align: middle !important; text-align: center; }
+        .report-table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1.5px solid #1e293b; background: white; }
+        .report-table th, .report-table td { border: 1px solid #94a3b8; padding: 12px 10px; vertical-align: top; word-break: break-all; }
+        .report-table th { background-color: #f8fafc; font-size: 0.8rem; color: #1e293b; font-weight: 800; text-align: center; }
+        
+        .dept-col { width: 15%; vertical-align: middle !important; text-align: center; background-color: #fcfcfd; }
+        .content-col { width: 28.33%; }
 
         @media print {
             .no-print { display: none !important; }
@@ -707,44 +682,28 @@
         }
 
         function renderDetail(r) {
-            const act = formatToList(r.activity);
-            const pln = formatToList(r.plans);
-            const pry = formatToList(r.prayer);
-            const empty = '<li style="list-style:none;color:#94a3b8;font-size:0.8rem;">-</li>';
+            const activityHtml = formatToList(r.activity);
+            const plansHtml = formatToList(r.plans);
+            const prayerHtml = formatToList(r.prayer);
 
             document.getElementById('search-result-area').innerHTML = `
-                <div class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden animate-dropdown">
-                    <!-- 헤더 바 -->
-                    <div class="bg-slate-800 px-5 py-3 flex justify-between items-center">
-                        <span class="text-white text-sm font-black">${r.dept} &nbsp;<span class="font-normal opacity-70 text-xs">(${r.writer}) &nbsp;${String(r.date).split(' ')[0]}</span></span>
-                        <div class="flex gap-2">
-                            <button onclick="editReport('${r.id}')" class="text-xs bg-white/15 hover:bg-white/25 text-white px-3 py-1 rounded-lg font-bold transition"><i class="fas fa-pen mr-1"></i>수정</button>
-                            <button onclick="deleteReport('${r.id}')" class="text-xs bg-red-500/70 hover:bg-red-500 text-white px-3 py-1 rounded-lg font-bold transition"><i class="fas fa-trash mr-1"></i>삭제</button>
+                <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden animate-dropdown">
+                    <div class="bg-indigo-600 p-6 flex justify-between items-center text-white">
+                        <div>
+                            <h2 class="text-lg font-black">${r.dept} 사역 보고</h2>
+                            <p class="text-[11px] opacity-80 mt-1">${String(r.date).split(' ')[0]} 제출</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs bg-white/20 px-3 py-1.5 rounded-full font-bold">작성자: ${r.writer}</span>
+                            <button onclick="editReport('${r.id}')" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full font-bold transition"><i class="fas fa-pen mr-1"></i>수정</button>
+                            <button onclick="deleteReport('${r.id}')" class="text-xs bg-red-500/70 hover:bg-red-500 px-3 py-1.5 rounded-full font-bold transition"><i class="fas fa-trash mr-1"></i>삭제</button>
                         </div>
                     </div>
-                    <!-- docx 동일 테이블 -->
-                    <div class="p-4 overflow-x-auto">
-                        <table class="detail-table">
-                            <thead>
-                                <tr>
-                                    <th class="detail-dept-col">부서 / 작성자</th>
-                                    <th>활동 내역</th>
-                                    <th>사역 계획</th>
-                                    <th>건의사항 및 기타</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="detail-dept-col">
-                                        <div class="font-black text-sm">${r.dept}</div>
-                                        <div class="text-xs text-slate-500 mt-1">(${r.writer})</div>
-                                    </td>
-                                    <td><ul class="auto-list">${act || empty}</ul></td>
-                                    <td><ul class="auto-list">${pln || empty}</ul></td>
-                                    <td><ul class="auto-list">${pry || empty}</ul></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                        ${activityHtml ? `<div><h4 class="text-xs font-black text-indigo-600 uppercase mb-4">활동 내역</h4><ul class="auto-list">${activityHtml}</ul></div>` : ''}
+                        ${plansHtml    ? `<div><h4 class="text-xs font-black text-emerald-600 uppercase mb-4">사역 계획</h4><ul class="auto-list">${plansHtml}</ul></div>` : ''}
+                        ${prayerHtml   ? `<div><h4 class="text-xs font-black text-amber-600 uppercase mb-4">건의 및 기타</h4><ul class="auto-list">${prayerHtml}</ul></div>` : ''}
+                        ${!activityHtml && !plansHtml && !prayerHtml ? '<div class="col-span-3 text-center text-slate-400 py-10">상세 내용이 없습니다.</div>' : ''}
                     </div>
                 </div>`;
         }
@@ -788,15 +747,11 @@
                 const act = formatToList(r.activity);
                 const pln = formatToList(r.plans);
                 const pry = formatToList(r.prayer);
-                const empty = '<li style="list-style:none;color:#94a3b8;font-size:0.8rem;">-</li>';
                 html += `<tr>
-                    <td class="dept-col">
-                        <div class="font-black text-sm">${r.dept}</div>
-                        <div class="text-xs text-slate-500 mt-1">(${r.writer})</div>
-                    </td>
-                    <td><ul class="auto-list">${act || empty}</ul></td>
-                    <td><ul class="auto-list">${pln || empty}</ul></td>
-                    <td><ul class="auto-list">${pry || empty}</ul></td>
+                    <td class="dept-col"><div class="font-black">${r.dept}</div><div class="text-[10px] text-slate-400 mt-1">${r.writer}</div></td>
+                    <td><ul class="auto-list">${act || '<li style="list-style:none;color:#cbd5e1;">-</li>'}</ul></td>
+                    <td><ul class="auto-list">${pln || '<li style="list-style:none;color:#cbd5e1;">-</li>'}</ul></td>
+                    <td><ul class="auto-list">${pry || '<li style="list-style:none;color:#cbd5e1;">-</li>'}</ul></td>
                 </tr>`;
             });
             html += `</tbody></table>`;
