@@ -54,9 +54,20 @@
         .dept-col { width: 13%; vertical-align: middle !important; text-align: center; }
         .content-col { width: 29%; }
 
+        /* 화면에서 월별 통합보고서 영역 */
+        #monthly-report-content {
+            background: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+            overflow-x: auto;
+        }
+
         @media print {
             .no-print { display: none !important; }
             .print-area { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            #monthly-report-content { border: none !important; box-shadow: none !important; padding: 0 !important; border-radius: 0 !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             @page { size: A4 portrait; margin: 1cm; }
         }
