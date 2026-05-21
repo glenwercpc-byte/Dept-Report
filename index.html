@@ -264,7 +264,7 @@
         // ─────────────────────────────────────────────
         // ★ Google Apps Script 배포 URL
         // ─────────────────────────────────────────────
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxUCCdrK1xKAfVB5ChY6uG6v52sewDK9ax-MvKYWp_vj-w18aWXHA6skXMS3Z0v-l6b7w/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyl2YZxddY3cJgnEWMzR-FXqekkVSwE8gagIgKhNsd620daZU8t1hPepNMGC6FdohlKZw/exec';
 
         // GAS 호출 헬퍼 — JSONP (Apps Script CORS 우회 유일 방법)
         function gasCall(action, params, successHandler, failureHandler) {
@@ -811,11 +811,9 @@
         // ─────────────────────────────────────────────
         function formatToList(text) {
             if (!text || text.trim() === '' || text === 'undefined') return null;
-            // ** 마크다운 제거
             let clean = text.replace(/\*\*/g, '').trim();
-            // 줄바꿈 없이 "1. ...2. ...3. ..." 형태로 붙어있는 경우 분리
-            // 숫자+점/괄호 앞에 줄바꿈 삽입
-            clean = clean.replace(/(\d+[\.\)]\s)/g, '\n$1').trim();
+            // "1. 텍스트2. 텍스트" 형태: 숫자+점 앞(맨앞 제외)에 줄바꿈 삽입
+            clean = clean.replace(/([^\n])(\d+[\.\)]\s)/g, '$1\n$2');
             const lines = clean.split('\n')
                 .map(l => l.trim())
                 .filter(l => l !== '' && !/^\d+[\.\)]\s*$/.test(l));
