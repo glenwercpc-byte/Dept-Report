@@ -40,12 +40,11 @@
         .auto-list li { display: flex; gap: 5px; margin-bottom: 4px; line-height: 1.5; font-size: 0.9rem; }
         .auto-list li .list-num { font-weight: bold; color: #6366f1; flex-shrink: 0; min-width: 18px; }
 
-        .report-table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 2px solid #000; background: white; }
-        .report-table th, .report-table td { border: 1px solid #000; padding: 10px 8px; vertical-align: top; word-break: break-word; font-size: 0.82rem; }
-        .report-table th { background-color: #000; color: #fff; font-size: 0.8rem; font-weight: 800; text-align: center; }
-        
-        .dept-col { width: 13%; vertical-align: middle !important; text-align: center; }
-        .content-col { width: 29%; }
+        .report-table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; border: 2px solid #000 !important; background: white !important; }
+        .report-table th, .report-table td { border: 1px solid #000 !important; padding: 10px 8px !important; vertical-align: top !important; word-break: break-word !important; font-size: 0.82rem !important; }
+        .report-table thead th { background-color: #000 !important; color: #fff !important; font-size: 0.8rem !important; font-weight: 800 !important; text-align: center !important; }
+        .dept-col { width: 13% !important; vertical-align: middle !important; text-align: center !important; }
+        .content-col { width: 29% !important; }
 
         /* 화면에서 월별 통합보고서 영역 */
         #monthly-report-content {
@@ -739,23 +738,36 @@
             document.getElementById('section-monthly').classList.remove('hidden');
             toggleMonthlyModal(false);
 
-            let html = `<div class="text-center mb-10"><h1 class="text-3xl font-black">${year}년 ${parseInt(month)}월 사역 통합 보고서</h1></div>
-                <table class="report-table"><thead><tr>
-                    <th class="dept-col">부서/작성자</th>
-                    <th class="content-col">활동 내역</th>
-                    <th class="content-col">사역 계획</th>
-                    <th class="content-col">건의사항 및 기타</th>
-                </tr></thead><tbody>`;
+            let html = `
+                <div style="text-align:center;margin-bottom:16px;">
+                    <h1 style="font-size:1.25rem;font-weight:900;color:#0f172a;">${year}년 ${parseInt(month)}월 CCPC 사역 통합 보고서</h1>
+                </div>
+                <table style="width:100%;border-collapse:collapse;table-layout:fixed;border:2px solid #000;background:#fff;">
+                    <thead>
+                        <tr>
+                            <th style="border:1px solid #000;padding:8px 6px;background:#000;color:#fff;font-size:0.8rem;font-weight:800;text-align:center;width:13%;">부서 / 작성자</th>
+                            <th style="border:1px solid #000;padding:8px 6px;background:#000;color:#fff;font-size:0.8rem;font-weight:800;text-align:center;width:29%;">활동 내역</th>
+                            <th style="border:1px solid #000;padding:8px 6px;background:#000;color:#fff;font-size:0.8rem;font-weight:800;text-align:center;width:29%;">사역 계획</th>
+                            <th style="border:1px solid #000;padding:8px 6px;background:#000;color:#fff;font-size:0.8rem;font-weight:800;text-align:center;width:29%;">건의사항 및 기타</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
 
+            const tdStyle = 'border:1px solid #000;padding:9px 8px;vertical-align:top;word-break:break-word;font-size:0.82rem;';
+            const deptTdStyle = tdStyle + 'text-align:center;vertical-align:middle;width:13%;';
+            const emptyCell = '<li style="list-style:none;color:#94a3b8;font-size:0.8rem;">-</li>';
             filtered.forEach(r => {
                 const act = formatToList(r.activity);
                 const pln = formatToList(r.plans);
                 const pry = formatToList(r.prayer);
                 html += `<tr>
-                    <td class="dept-col"><div class="font-black">${r.dept}</div><div class="text-[10px] text-slate-400 mt-1">${r.writer}</div></td>
-                    <td><ul class="auto-list">${act || '<li style="list-style:none;color:#cbd5e1;">-</li>'}</ul></td>
-                    <td><ul class="auto-list">${pln || '<li style="list-style:none;color:#cbd5e1;">-</li>'}</ul></td>
-                    <td><ul class="auto-list">${pry || '<li style="list-style:none;color:#cbd5e1;">-</li>'}</ul></td>
+                    <td style="${deptTdStyle}">
+                        <div style="font-weight:900;font-size:0.88rem;">${r.dept}</div>
+                        <div style="font-size:0.75rem;color:#64748b;margin-top:3px;">(${r.writer})</div>
+                    </td>
+                    <td style="${tdStyle}"><ul class="auto-list">${act || emptyCell}</ul></td>
+                    <td style="${tdStyle}"><ul class="auto-list">${pln || emptyCell}</ul></td>
+                    <td style="${tdStyle}"><ul class="auto-list">${pry || emptyCell}</ul></td>
                 </tr>`;
             });
             html += `</tbody></table>`;
