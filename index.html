@@ -36,16 +36,9 @@
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
-        .auto-list { counter-reset: item; list-style-type: none; padding-left: 0; margin: 0; }
-        .auto-list li { display: flex; margin-bottom: 4px; line-height: 1.5; font-size: 0.9rem; }
-        .auto-list li::before { 
-            content: counter(item) ". "; 
-            counter-increment: item; 
-            font-weight: bold; 
-            margin-right: 8px; 
-            color: #6366f1;
-            flex-shrink: 0;
-        }
+        .auto-list { list-style-type: none; padding-left: 0; margin: 0; }
+        .auto-list li { display: flex; gap: 5px; margin-bottom: 4px; line-height: 1.5; font-size: 0.9rem; }
+        .auto-list li .list-num { font-weight: bold; color: #6366f1; flex-shrink: 0; min-width: 18px; }
 
         .report-table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 2px solid #000; background: white; }
         .report-table th, .report-table td { border: 1px solid #000; padding: 10px 8px; vertical-align: top; word-break: break-word; font-size: 0.82rem; }
@@ -272,7 +265,7 @@
         // ─────────────────────────────────────────────
         // ★ Google Apps Script 배포 URL
         // ─────────────────────────────────────────────
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxwmaTmW0Sfsr72byeZn1yZWcgaIW102JMR5qSkuM-CJo9KS9D8X5fca9xOEBg0FZqFlA/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbynWp2S8laLBH__560pqseLdwwvl9ub6t1bnehFCY9SSottPUXRI2POqdyt7uwEpuijxg/exec';
 
         // GAS 호출 헬퍼 — JSONP (Apps Script CORS 우회 유일 방법)
         function gasCall(action, params, successHandler, failureHandler) {
@@ -812,7 +805,7 @@
             if (lines.length === 0) return null;
             const items = lines.map(l => l.replace(/^\d+[\.\)]\s*/, '').trim()).filter(l => l !== '');
             if (items.length === 0) return null;
-            return items.map(l => `<li>${l}</li>`).join('');
+            return items.map((l, i) => `<li><span class="list-num">${i + 1}.</span><span>${l}</span></li>`).join('');
         }
 
         function handleTextareaFocus(el) {
