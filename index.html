@@ -795,13 +795,18 @@
         function formatToList(text) {
             if (!text || text.trim() === '' || text === 'undefined') return null;
             let clean = text.replace(/\*\*/g, '').trim();
-            // "1. 텍스트2. 텍스트" 형태: 숫자+점 앞(맨앞 제외)에 줄바꿈 삽입
-            clean = clean.replace(/([^\n])(\d+[\.\)]\s)/g, '$1\n$2');
+            // "1. 텍스트2. 텍스트" 형태(줄바꿈 없이 번호가 한 줄에 이어붙은 경우)만 강제로 줄바꿈 삽입.
+            // 이미 실제 줄바꿈이 있는 텍스트(*, 일반 줄글 등)에는 적용하지 않음 — 날짜(5.1 등) 같은
+            // "숫자+점" 패턴을 새 항목으로 잘못 쪼개는 부작용을 방지.
+            if (!clean.includes('\n')) {
+                clean = clean.replace(/([^\n])(\d+[\.\)]\s)/g, '$1\n$2');
+            }
             const lines = clean.split('\n')
                 .map(l => l.trim())
                 .filter(l => l !== '' && !/^\d+[\.\)]\s*$/.test(l));
             if (lines.length === 0) return null;
-            const items = lines.map(l => l.replace(/^\d+[\.\)]\s*/, '').trim()).filter(l => l !== '');
+            // 글머리표(*, •, ‣, ▪, -) 또는 "1. "/"1) " 형태의 번호 접두사를 모두 제거
+            const items = lines.map(l => l.replace(/^(?:\d+[\.\)]|[*•‣▪\-])\s*/, '').trim()).filter(l => l !== '');
             if (items.length === 0) return null;
             return items.map((l, i) => `<li><span class="list-num">${i + 1}.</span><span>${l}</span></li>`).join('');
         }
