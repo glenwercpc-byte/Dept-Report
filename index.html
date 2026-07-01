@@ -139,15 +139,24 @@
         <!-- 대시보드 -->
         <div id="dashboard" class="grid grid-cols-4 gap-4 mb-8 no-print">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">총 누적 보고서</p>
+                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1 flex items-baseline gap-1.5">
+                    <span>총 누적 보고서</span>
+                    <span class="normal-case text-slate-400 font-semibold">Total Reports</span>
+                </p>
                 <h2 id="total-count" class="text-3xl font-black">0</h2>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">이번 달 제출 건수</p>
+                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1 flex items-baseline gap-1.5">
+                    <span>이번 달 제출 건수</span>
+                    <span class="normal-case text-slate-400 font-semibold">This Month</span>
+                </p>
                 <h2 id="month-count" class="text-3xl font-black">0</h2>
             </div>
             <div class="col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-[10px] text-slate-400 font-bold uppercase mb-2">이번 달 제출 부서 (클릭 시 조회)</p>
+                <p class="text-[10px] text-slate-400 font-bold uppercase mb-2 flex items-baseline gap-1.5">
+                    <span>이번 달 제출 부서 (클릭 시 조회)</span>
+                    <span class="normal-case text-slate-400 font-semibold">Departments Submitted (Click to View)</span>
+                </p>
                 <div id="active-depts" class="flex flex-wrap gap-1.5"></div>
             </div>
         </div>
@@ -170,23 +179,23 @@
                             <input type="hidden" id="form-id" value="">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1 flex items-center justify-between">
+                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1 flex items-baseline gap-2">
                                         <span>부서 선택</span>
-                                        <span class="no-print normal-case text-slate-300 font-medium tracking-wide">Department</span>
+                                        <span class="no-print normal-case text-slate-400 font-semibold tracking-wide">Department</span>
                                     </label>
                                     <select id="form-dept" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></select>
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1 flex items-center justify-between">
+                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1 flex items-baseline gap-2">
                                         <span>작성자</span>
-                                        <span class="no-print normal-case text-slate-300 font-medium tracking-wide">Writer</span>
+                                        <span class="no-print normal-case text-slate-400 font-semibold tracking-wide">Writer</span>
                                     </label>
                                     <input type="text" id="form-writer" required placeholder="이름 입력" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1 flex items-center justify-between">
+                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1 flex items-baseline gap-2">
                                         <span>작성일</span>
-                                        <span class="no-print normal-case text-slate-300 font-medium tracking-wide">Date</span>
+                                        <span class="no-print normal-case text-slate-400 font-semibold tracking-wide">Date</span>
                                     </label>
                                     <input type="date" id="form-date" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
                                 </div>
@@ -194,23 +203,23 @@
 
                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-indigo-600 uppercase ml-1 flex items-center justify-between">
+                                    <label class="text-[11px] font-black text-indigo-600 uppercase ml-1 flex items-baseline gap-2">
                                         <span class="flex items-center gap-2"><i class="fas fa-tasks"></i> 활동 내역</span>
-                                        <span class="no-print normal-case text-indigo-300 font-medium tracking-wide">Activity Details</span>
+                                        <span class="no-print normal-case text-indigo-400 font-semibold tracking-wide">Activity Details</span>
                                     </label>
                                     <textarea id="form-activity" required placeholder="내용이 없으면 자동으로 건너뜁니다." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-emerald-600 uppercase ml-1 flex items-center justify-between">
+                                    <label class="text-[11px] font-black text-emerald-600 uppercase ml-1 flex items-baseline gap-2">
                                         <span class="flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 사역 계획</span>
-                                        <span class="no-print normal-case text-emerald-300 font-medium tracking-wide">Ministry Plans</span>
+                                        <span class="no-print normal-case text-emerald-500 font-semibold tracking-wide">Ministry Plans</span>
                                     </label>
                                     <textarea id="form-plans" placeholder="내용이 없으면 자동으로 건너뜁니다." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-amber-600 uppercase ml-1 flex items-center justify-between">
+                                    <label class="text-[11px] font-black text-amber-600 uppercase ml-1 flex items-baseline gap-2">
                                         <span class="flex items-center gap-2"><i class="fas fa-comment-dots"></i> 건의사항 및 기타</span>
-                                        <span class="no-print normal-case text-amber-300 font-medium tracking-wide">Suggestions & Others</span>
+                                        <span class="no-print normal-case text-amber-500 font-semibold tracking-wide">Suggestions & Others</span>
                                     </label>
                                     <textarea id="form-prayer" placeholder="내용이 없으면 자동으로 건너뜁니다." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-amber-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
                                 </div>
