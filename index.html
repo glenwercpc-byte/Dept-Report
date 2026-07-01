@@ -93,12 +93,19 @@
             <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-sm">
                 <button onclick="resetAll()" class="px-4 py-2.5 bg-white text-slate-600 rounded-xl hover:bg-slate-50 transition border border-slate-200 group flex items-center gap-2 shadow-sm">
                     <i class="fas fa-circle-notch text-sm group-hover:rotate-180 transition-transform duration-500"></i>
-                    <span class="text-xs font-bold">초기화</span>
+                    <span class="flex flex-col items-start leading-tight">
+                        <span class="text-xs font-bold">초기화</span>
+                        <span class="text-[9px] font-medium text-slate-400 tracking-wide">Reset</span>
+                    </span>
                 </button>
 
                 <div class="relative">
                     <button onclick="toggleMonthlyModal()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-black hover:bg-indigo-700 transition flex items-center gap-2 shadow-sm">
-                        월별 통합 보고서 <i class="fas fa-chevron-down opacity-50 text-[10px]"></i>
+                        <span class="flex flex-col items-start leading-tight">
+                            <span>월별 통합 보고서</span>
+                            <span class="text-[9px] font-medium text-indigo-200 tracking-wide">Monthly Report</span>
+                        </span>
+                        <i class="fas fa-chevron-down opacity-50 text-[10px]"></i>
                     </button>
                     <div id="monthly-modal" class="hidden absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 animate-dropdown z-[1200]">
                         <h2 class="text-slate-900 font-black text-sm mb-3 text-center">통합 조회 기간 선택</h2>
@@ -119,7 +126,10 @@
 
                 <button id="btn-open-form" onclick="toggleWriteForm(true)" class="px-4 py-2.5 bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition border border-slate-200 flex items-center gap-2 shadow-sm">
                     <i class="fas fa-plus text-sm"></i>
-                    <span class="text-xs font-black">새 보고서 작성</span>
+                    <span class="flex flex-col items-start leading-tight">
+                        <span class="text-xs font-black">새 보고서 작성</span>
+                        <span class="text-[9px] font-medium text-emerald-400 tracking-wide">Add New Report</span>
+                    </span>
                 </button>
             </div>
         </div>
