@@ -170,37 +170,61 @@
                             <input type="hidden" id="form-id" value="">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1">부서 선택</label>
+                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1 flex items-center justify-between">
+                                        <span>부서 선택</span>
+                                        <span class="no-print normal-case text-slate-300 font-medium tracking-wide">Department</span>
+                                    </label>
                                     <select id="form-dept" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></select>
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1">작성자</label>
+                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1 flex items-center justify-between">
+                                        <span>작성자</span>
+                                        <span class="no-print normal-case text-slate-300 font-medium tracking-wide">Writer</span>
+                                    </label>
                                     <input type="text" id="form-writer" required placeholder="이름 입력" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1">작성일</label>
+                                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1 flex items-center justify-between">
+                                        <span>작성일</span>
+                                        <span class="no-print normal-case text-slate-300 font-medium tracking-wide">Date</span>
+                                    </label>
                                     <input type="date" id="form-date" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-indigo-600 uppercase ml-1 flex items-center gap-2"><i class="fas fa-tasks"></i> 활동 내역</label>
+                                    <label class="text-[11px] font-black text-indigo-600 uppercase ml-1 flex items-center justify-between">
+                                        <span class="flex items-center gap-2"><i class="fas fa-tasks"></i> 활동 내역</span>
+                                        <span class="no-print normal-case text-indigo-300 font-medium tracking-wide">Activity Details</span>
+                                    </label>
                                     <textarea id="form-activity" required placeholder="내용이 없으면 자동으로 건너뜁니다." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-emerald-600 uppercase ml-1 flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 사역 계획</label>
+                                    <label class="text-[11px] font-black text-emerald-600 uppercase ml-1 flex items-center justify-between">
+                                        <span class="flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 사역 계획</span>
+                                        <span class="no-print normal-case text-emerald-300 font-medium tracking-wide">Ministry Plans</span>
+                                    </label>
                                     <textarea id="form-plans" placeholder="내용이 없으면 자동으로 건너뜁니다." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-[11px] font-black text-amber-600 uppercase ml-1 flex items-center gap-2"><i class="fas fa-comment-dots"></i> 건의사항 및 기타</label>
+                                    <label class="text-[11px] font-black text-amber-600 uppercase ml-1 flex items-center justify-between">
+                                        <span class="flex items-center gap-2"><i class="fas fa-comment-dots"></i> 건의사항 및 기타</span>
+                                        <span class="no-print normal-case text-amber-300 font-medium tracking-wide">Suggestions & Others</span>
+                                    </label>
                                     <textarea id="form-prayer" placeholder="내용이 없으면 자동으로 건너뜁니다." class="auto-resize-textarea w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-amber-500 outline-none transition resize-none" onfocus="handleTextareaFocus(this)" oninput="handleTextareaInput(this)" onkeydown="handleTextareaKeydown(event, this)"></textarea>
                                 </div>
                             </div>
                             
                             <div class="flex justify-center gap-3 pt-4">
-                                <button type="button" onclick="toggleWriteForm(false)" class="w-32 bg-slate-200 text-slate-600 py-3 rounded-xl font-bold text-sm hover:bg-slate-300 transition">취소</button>
-                                <button type="submit" id="submit-btn" class="w-48 bg-indigo-600 text-white py-3 rounded-xl font-black text-sm hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20">보고서 제출하기</button>
+                                <button type="button" onclick="toggleWriteForm(false)" class="w-32 bg-slate-200 text-slate-600 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition leading-tight">
+                                    <span class="block">취소</span>
+                                    <span class="no-print block text-[9px] font-medium text-slate-400 tracking-wide normal-case">Cancel</span>
+                                </button>
+                                <button type="submit" id="submit-btn" class="w-48 bg-indigo-600 text-white py-2.5 rounded-xl font-black text-sm hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20 leading-tight">
+                                    <span id="submit-btn-kr" class="block">보고서 제출하기</span>
+                                    <span id="submit-btn-en" class="no-print block text-[9px] font-medium text-indigo-200 tracking-wide normal-case">Submit Report</span>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -435,6 +459,9 @@
             // 수정 시에는 암호 모달 없이 바로 저장
             if (idVal) { doSave(); return; }
 
+            // EM 부서는 암호 설정 없이 바로 저장
+            if (document.getElementById('form-dept').value === 'EM') { doSave(''); return; }
+
             // 신규 저장: 암호 설정 모달 표시
             showPwModal('암호 설정 (선택)', '건너뛰기', function(pw) { doSave(pw); });
         }
@@ -443,8 +470,11 @@
         // [수정3] 삭제 기능
         // ─────────────────────────────────────────────
         function deleteReport(id) {
-            if (!confirm('이 보고서를 삭제하시겠습니까?')) return;
             const r = allReports.find(rep => String(rep.id) === String(id));
+            const confirmMsg = (r && r.dept === 'EM')
+                ? '이 보고서를 삭제하시겠습니까?\nDelete this report?'
+                : '이 보고서를 삭제하시겠습니까?';
+            if (!confirm(confirmMsg)) return;
 
             function doDelete() {
                 toggleLoading(true);
@@ -575,7 +605,7 @@
                 document.getElementById('form-activity').value = r.activity || '';
                 document.getElementById('form-plans').value = r.plans || '';
                 document.getElementById('form-prayer').value = r.prayer || '';
-                document.getElementById('submit-btn').innerText = '보고서 수정하기';
+                setSubmitBtnText('보고서 수정하기', 'Update Report');
                 document.querySelectorAll('.auto-resize-textarea').forEach(ta => handleTextareaInput(ta));
             }
 
@@ -602,13 +632,13 @@
                 if (!document.getElementById('form-id').value) {
                     document.getElementById('report-form').reset();
                     document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
-                    document.getElementById('submit-btn').innerText = '보고서 제출하기';
+                    setSubmitBtnText('보고서 제출하기', 'Submit Report');
                     document.querySelectorAll('.auto-resize-textarea').forEach(ta => ta.style.height = '100px');
                 }
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
                 document.getElementById('form-id').value = '';
-                document.getElementById('submit-btn').innerText = '보고서 제출하기';
+                setSubmitBtnText('보고서 제출하기', 'Submit Report');
                 formArea.classList.add('hidden');
                 resultArea.classList.remove('hidden');
                 searchBar.classList.remove('hidden');
@@ -681,6 +711,7 @@
             const activityHtml = formatToList(r.activity);
             const plansHtml = formatToList(r.plans);
             const prayerHtml = formatToList(r.prayer);
+            const isEM = r.dept === 'EM';
 
             document.getElementById('search-result-area').innerHTML = `
                 <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden animate-dropdown">
@@ -691,8 +722,14 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-xs bg-white/20 px-3 py-1.5 rounded-full font-bold">작성자: ${r.writer}</span>
-                            <button onclick="editReport('${r.id}')" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full font-bold transition"><i class="fas fa-pen mr-1"></i>수정</button>
-                            <button onclick="deleteReport('${r.id}')" class="text-xs bg-red-500/70 hover:bg-red-500 px-3 py-1.5 rounded-full font-bold transition"><i class="fas fa-trash mr-1"></i>삭제</button>
+                            <button onclick="editReport('${r.id}')" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full font-bold transition flex flex-col items-center leading-tight">
+                                <span><i class="fas fa-pen mr-1"></i>수정</span>
+                                ${isEM ? '<span class="no-print text-[9px] font-medium text-white/70 normal-case">Edit</span>' : ''}
+                            </button>
+                            <button onclick="deleteReport('${r.id}')" class="text-xs bg-red-500/70 hover:bg-red-500 px-3 py-1.5 rounded-full font-bold transition flex flex-col items-center leading-tight">
+                                <span><i class="fas fa-trash mr-1"></i>삭제</span>
+                                ${isEM ? '<span class="no-print text-[9px] font-medium text-white/70 normal-case">Delete</span>' : ''}
+                            </button>
                         </div>
                     </div>
                     <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -802,6 +839,11 @@
         // ─────────────────────────────────────────────
         // 유틸리티
         // ─────────────────────────────────────────────
+        function setSubmitBtnText(kr, en) {
+            document.getElementById('submit-btn-kr').innerText = kr;
+            document.getElementById('submit-btn-en').innerText = en;
+        }
+
         function formatToList(text) {
             if (!text || text.trim() === '' || text === 'undefined') return null;
             let clean = text.replace(/\*\*/g, '').trim();
