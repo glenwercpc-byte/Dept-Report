@@ -800,10 +800,10 @@
                 <table style="width:100%;border-collapse:collapse;table-layout:fixed;border:2px solid #000;background:#fff;">
                     <thead>
                         <tr>
-                            <th style="border:1px solid #000;padding:8px 6px;background:#000;color:#fff;font-size:0.8rem;font-weight:800;text-align:center;width:13%;">부서 / 작성자</th>
-                            <th style="border:1px solid #000;padding:8px 6px;background:#000;color:#fff;font-size:0.8rem;font-weight:800;text-align:center;width:29%;">활동 내역</th>
-                            <th style="border:1px solid #000;padding:8px 6px;background:#000;color:#fff;font-size:0.8rem;font-weight:800;text-align:center;width:29%;">사역 계획</th>
-                            <th style="border:1px solid #000;padding:8px 6px;background:#000;color:#fff;font-size:0.8rem;font-weight:800;text-align:center;width:29%;">건의사항 및 기타</th>
+                            <th style="border:1px solid #000;padding:8px 6px;background:#fff;color:#000;font-size:0.8rem;font-weight:800;text-align:center;width:13%;">부서 / 작성자</th>
+                            <th style="border:1px solid #000;padding:8px 6px;background:#fff;color:#000;font-size:0.8rem;font-weight:800;text-align:center;width:29%;">활동 내역</th>
+                            <th style="border:1px solid #000;padding:8px 6px;background:#fff;color:#000;font-size:0.8rem;font-weight:800;text-align:center;width:29%;">사역 계획</th>
+                            <th style="border:1px solid #000;padding:8px 6px;background:#fff;color:#000;font-size:0.8rem;font-weight:800;text-align:center;width:29%;">건의사항 및 기타</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -847,12 +847,8 @@
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fab fa-google-drive"></i> 구글 독스/프린트 출력';
                     if (result && result.success) {
-                        // 편집기 화면(캔버스)은 방금 생성된 문서에서 간혹 구버전을 보여주는
-                        // 알려진 지연 현상이 있어, 인쇄와 동일하게 항상 정확한 PDF 보기/인쇄
-                        // 경로를 바로 연다. (Ctrl+P와 같은 렌더링 경로)
-                        const openUrl = result.pdfUrl || result.url;
-                        window.open(openUrl, '_blank');
-                        showToast('문서가 생성되었습니다! PDF로 바로 확인·인쇄할 수 있습니다.');
+                        window.open(result.url, '_blank');
+                        showToast('Google Docs 문서가 생성되었습니다!');
                     } else {
                         showToast('문서 생성 실패: ' + (result ? result.error : '알 수 없는 오류'));
                     }
